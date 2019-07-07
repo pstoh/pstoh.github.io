@@ -1,1 +1,1 @@
-true|max
+true|1000
