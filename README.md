@@ -27,6 +27,7 @@
 │   ├── favicon.svg             站点图标
 │   └── og-cover.png            社交分享封面 1200x630
 ├── feed.xml                    RSS 2.0 订阅源
+├── <indexnow-key>.txt          IndexNow 密钥文件（向 Bing / Yandex 提交 URL 用）
 ├── robots.txt
 ├── sitemap.xml                 含 xhtml:link 多语言标注
 └── .nojekyll                   跳过 Jekyll 处理
@@ -68,6 +69,21 @@ git push -u origin main
 5. 在其它文章的「接着看」里加上新链接；
 6. 如果有英文版，把英文文件放到 `en/posts/` 下（同名），并检查两边的 `hreflang` 是否互指；
 7. 在 `feed.xml` 的 `<channel>` 里加一条 `<item>`，`pubDate` 用 RFC 822 格式。
+
+## 搜索引擎提交
+
+- 已向 **IndexNow**（Bing / Yandex / Seznam / Naver 共用）提交全站 14 条 URL
+- 密钥文件：`f796f07a0d987723dfe8c7840240cb39.txt`（仓库根目录，内容即密钥本身），重新提交时按下面格式 POST：
+
+```
+POST https://api.indexnow.org/indexnow
+Content-Type: application/json; charset=utf-8
+
+{"host":"pstoh.github.io","key":"f796f07a0d987723dfe8c7840240cb39","keyLocation":"https://pstoh.github.io/f796f07a0d987723dfe8c7840240cb39.txt",
+ "urlList":["https://pstoh.github.io/", "..."]}
+```
+
+- 百度 / Google 需要在各自站长平台验证站点归属（HTML 验证文件或 meta 标签），验证码拿到后放进本仓库根目录 / 首页 `<head>` 即可
 
 ## 许可
 
