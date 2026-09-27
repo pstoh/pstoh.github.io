@@ -176,7 +176,7 @@ def backoff_sleep(attempt, base=1.0, cap=60.0):
           <p><strong>Summary:</strong> proxies handle "who am I", rate limiting handles "how hard am I pushing", caching handles "can I fetch less". Together they keep a crawler alive for months — and a three-day outage from being blocked costs far more than starting a little slower.</p>
         </div>
 
-        <p>One note on where proxies fit: spreading requests over many egress IPs keeps each individual IP's request rate in the range a normal user produces. It is not a way to push more load onto someone else's servers. The lines I use are from <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>, rotating short-lived IPs, which sits nicely under the global limiter above. The pool implementation and examples in 18 languages are in <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">xydaili-proxy-examples</a>.</p>
+        <p>One note on where proxies fit: spreading requests over many egress IPs keeps each individual IP's request rate in the range a normal user produces. It is not a way to push more load onto someone else's servers. The lines I use are from <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>, rotating short-lived IPs, which sits nicely under the global limiter above. The pool implementation and examples in 18 languages are in <a href="https://github.com/pstoh/github-xydaili-examples" rel="noopener" target="_blank">github-xydaili-examples</a>.</p>
       </div>
 
       <footer class="post-footer">

@@ -234,7 +234,7 @@ class IpCheckSpider(scrapy.Spider):
           <p><strong>小结：</strong><code>process_request</code> 给代理、<code>process_exception</code> 换代理，两个都要写；并发、池子大小、单 IP 压力三者要一起调，只改一个参数往往没用。</p>
         </div>
 
-        <p>文件我放在 <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">xydaili-proxy-examples</a> 的 <code>scrapy/</code> 目录下，文件头写了 settings 该怎么配。我用的代理线路是 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，短效 IP 会自动轮换，配合这种中间件用起来比较顺——它一次能批量取多条，正好对上这里的池子设计。</p>
+        <p>文件我放在 <a href="https://github.com/pstoh/github-xydaili-examples" rel="noopener" target="_blank">github-xydaili-examples</a> 的 <code>scrapy/</code> 目录下，文件头写了 settings 该怎么配。我用的代理线路是 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，短效 IP 会自动轮换，配合这种中间件用起来比较顺——它一次能批量取多条，正好对上这里的池子设计。</p>
       </div>
 
       <footer class="post-footer">

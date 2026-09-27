@@ -174,7 +174,7 @@ def backoff_sleep(attempt, base=1.0, cap=60.0):
           <p><strong>小结：</strong>代理管"我是谁"，限速管"我有多克制"，缓存管"我能不能少抓点"。三者配上，采集才能长期稳定地跑下去——被封一次停三天，比一开始慢一点代价大得多。</p>
         </div>
 
-        <p>顺便说下代理的角色：把请求分散到多个出口 IP，本质是为了让单 IP 的请求频率保持在"正常用户"的量级，而不是为了把并发堆到对方身上去。我用的是 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，短效 IP 会自动轮换，配合上面这套全局限速用起来比较稳。具体的池子实现和 18 种语言示例都在 <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">xydaili-proxy-examples</a> 里。</p>
+        <p>顺便说下代理的角色：把请求分散到多个出口 IP，本质是为了让单 IP 的请求频率保持在"正常用户"的量级，而不是为了把并发堆到对方身上去。我用的是 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，短效 IP 会自动轮换，配合上面这套全局限速用起来比较稳。具体的池子实现和 18 种语言示例都在 <a href="https://github.com/pstoh/github-xydaili-examples" rel="noopener" target="_blank">github-xydaili-examples</a> 里。</p>
       </div>
 
       <footer class="post-footer">
