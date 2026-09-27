@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Scrapy Proxy Middleware That Rotates IPs per Request - pstoh's Notes</title>
+<meta name="description" content="What each Scrapy downloader-middleware hook does, why RETRY_TIMES alone never changes the proxy, why adding proxies can increase failures, and how to prove the rotation actually happens. Full working middleware code.">
+<meta name="keywords" content="scrapy proxy middleware,scrapy rotate ip,process_exception,scrapy proxy pool,scrapy 407">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/scrapy-proxy-middleware.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/scrapy-proxy-middleware.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="pstoh's Notes">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="A Scrapy Proxy Middleware That Rotates IPs per Request">
+<meta property="og:description" content="Two hooks, three traps, and code you can drop into your project.">
+<meta property="og:url" content="https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta property="article:published_time" content="2026-09-16">
+<meta property="article:section" content="Scrapy">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A Scrapy Proxy Middleware That Rotates IPs per Request">
+<meta name="twitter:description" content="Two hooks, three traps, and code you can drop into your project.">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html#post",
+      "headline": "A Scrapy Proxy Middleware That Rotates IPs per Request",
+      "description": "Downloader-middleware hooks, retry behaviour, and concurrency sizing for rotating proxies in Scrapy.",
+      "inLanguage": "en",
+      "datePublished": "2026-09-16",
+      "dateModified": "2026-09-27",
+      "author": { "@type": "Person", "name": "pstoh", "url": "https://pstoh.github.io/en/about.html" },
+      "publisher": { "@type": "Person", "name": "pstoh" },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html" },
+      "keywords": "scrapy proxy middleware, rotate ip, process_exception",
+      "articleSection": "Scrapy"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://pstoh.github.io/en/" },
+        { "@type": "ListItem", "position": 2, "name": "A Scrapy Proxy Middleware That Rotates IPs per Request", "item": "https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/en/"><span class="dot">p</span>pstoh's Notes</a>
+    <nav class="site-nav" aria-label="Site navigation">
+      <a href="/en/">Home</a>
+      <a href="/en/about.html">About</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+      <a href="/posts/scrapy-proxy-middleware.html" hreflang="zh-CN" lang="zh-CN">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/en/">Home</a><span>/</span>A Scrapy Proxy Middleware That Rotates IPs per Request
+    </nav>
+
+    <article class="post">
+      <header>
+        <h1>A Scrapy Proxy Middleware That Rotates IPs per Request</h1>
+        <div class="post-meta">
+          <time datetime="2026-09-16">2026-09-16</time>
+          <span>Scrapy</span>
+          <span>9 min read</span>
+          <span>by pstoh</span>
+        </div>
+      </header>
+
+      <div class="post-body">
+        <p>The quick-and-dirty way to add proxies to Scrapy is setting <code>meta["proxy"]</code> per request inside <code>start_requests</code>. It works for small jobs, then stops working the moment you enable concurrency: you cannot tell whether the proxy was ever applied, and retries keep hammering the same dead IP. The right place for this is a downloader middleware — it can attach a proxy before dispatch and swap it after a failure.</p>
+
+        <h2>The two hooks that matter</h2>
+        <ul>
+          <li><code>process_request(request, spider)</code> — runs <em>before</em> the request is sent. Set <code>request.meta["proxy"]</code> here.</li>
+          <li><code>process_exception(request, exception, spider)</code> — runs <em>after</em> the request raised. Pick a new IP, assign it, and return the request; Scrapy reschedules it.</li>
+        </ul>
+        <p>Most people only write the first one, which is exactly why "Scrapy retried three times and still used the dead proxy" happens.</p>
+        <blockquote><p>Return values are load-bearing: returning <code>None</code> from <code>process_request</code> means "continue"; returning a <code>Request</code> replaces the current one; returning a <code>Response</code> short-circuits. Getting this wrong makes requests silently disappear.</p></blockquote>
+
+        <h2>Ordering</h2>
+        <p>Lower numbers run first. Placing the proxy middleware <em>after</em> the retry middleware is usually right — let Scrapy exhaust its own retries first, then let us rotate:</p>
+        <pre><code>DOWNLOADER_MIDDLEWARES = {
+    "proxy_middleware.XydailiProxyMiddleware": 543,
+}</code></pre>
+
+        <h2>The middleware</h2>
+        <p>Note the <code>trust_env = False</code> line: the extraction request must go direct, otherwise a container-level <code>HTTP_PROXY</code> variable will push it through a proxy too.</p>
+        <pre><code>import time
+
+import requests
+
+API = "http://api.xydaili.net:2022/tools/ip.ashx"
+
+
+class XydailiProxyMiddleware(object):
+    def __init__(self, order, api=API, qty=10, area="", isp="",
+                 pool_size=5, max_age=170):
+        self.order = order
+        self.api = api
+        self.qty = qty
+        self.area = area
+        self.isp = isp
+        self.pool_size = pool_size
+        self.max_age = max_age
+        self._items = []
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        s = crawler.settings
+        order = s.get("XYDAILI_ORDER")
+        if not order:
+            raise ValueError("set XYDAILI_ORDER in settings.py")
+        return cls(
+            order=order,
+            qty=s.getint("XYDAILI_QTY", 10),
+            area=s.get("XYDAILI_AREA", ""),
+            isp=s.get("XYDAILI_ISP", ""),
+        )
+
+    def _refill(self):
+        params = {
+            "action": "GetIP",
+            "OrderNumber": self.order,
+            "protocol": 1,
+            "qty": self.qty,
+            "split": "json",
+        }
+        if self.area:
+            params["Area"] = self.area
+        if self.isp:
+            params["Isp"] = self.isp
+
+        session = requests.Session()
+        session.trust_env = False        # extraction must go direct
+        try:
+            data = session.get(self.api, params=params, timeout=10).json()
+        finally:
+            session.close()
+
+        if data.get("status") != 200 or not data.get("data"):
+            return
+        now = time.time()
+        for item in data["data"]:
+            self._items.append(
+                ("http://%s:%s" % (item["ip"], item["port"]), now + self.max_age)
+            )
+
+    def _take(self):
+        now = time.time()
+        self._items = [it for it in self._items if it[1] &gt; now]
+        if len(self._items) &lt; self.pool_size:
+            self._refill()
+        return self._items.pop(0)[0] if self._items else None
+
+    def process_request(self, request, spider):
+        proxy = self._take()
+        if proxy:
+            request.meta["proxy"] = proxy
+        return None
+
+    def process_exception(self, request, exception, spider):
+        """Swap the proxy and requeue the request."""
+        proxy = self._take()
+        if not proxy:
+            return None
+        request.meta["proxy"] = proxy
+        return request</code></pre>
+        <p>And the settings it expects:</p>
+        <pre><code>XYDAILI_ORDER = "YOUR-ORDER-ID"
+XYDAILI_QTY = 10          # extract in batches, never one at a time
+XYDAILI_AREA = ""         # optional city filter
+XYDAILI_ISP = ""          # optional carrier filter
+
+CONCURRENT_REQUESTS = 16
+RETRY_TIMES = 2
+DOWNLOAD_TIMEOUT = 15
+
+DOWNLOADER_MIDDLEWARES = {
+    "proxy_middleware.XydailiProxyMiddleware": 543,
+}</code></pre>
+
+        <h2>Three traps</h2>
+        <h3>1. Retries do not change the proxy</h3>
+        <p>Scrapy's built-in retry middleware reschedules the request but leaves <code>meta["proxy"]</code> untouched. <code>RETRY_TIMES</code> alone will happily retry the same dead exit three times. Rotation has to come from <code>process_exception</code>. Verify by logging the proxy next to every retry.</p>
+
+        <h3>2. Adding proxies made failures go up</h3>
+        <p>Usually a concurrency/pool mismatch. With <code>CONCURRENT_REQUESTS = 32</code> and a pool that only holds 10 IPs, 32 requests fight over 10 exits and each one gets hammered — which looks exactly like abusive traffic to the target. My rule of thumb: <strong>pool size around one third to one half of concurrency, and 2–5 concurrent requests per IP</strong>.</p>
+
+        <h3>3. An empty pool silently disables the proxy</h3>
+        <p>As written above, when <code>_take()</code> returns nothing the request goes out <em>directly</em> — and if the target blocks your own IP, the whole batch fails with no obvious cause in the logs. In production, fail loudly instead:</p>
+        <pre><code>from scrapy.exceptions import IgnoreRequest
+
+def process_request(self, request, spider):
+    proxy = self._take()
+    if not proxy:
+        raise IgnoreRequest("proxy pool empty, skipping %s" % request.url)
+    request.meta["proxy"] = proxy
+    return None</code></pre>
+
+        <h2>Prove the rotation works</h2>
+        <p>Do this once, before trusting anything:</p>
+        <pre><code>import scrapy
+
+class IpCheckSpider(scrapy.Spider):
+    name = "ipcheck"
+    start_urls = ["http://httpbin.org/ip"]
+
+    def parse(self, response):
+        self.logger.info("egress: %s", response.text)</code></pre>
+        <p>If the echoed address differs from your own public IP, the middleware is live. Two minutes here saves hours of arguing about whether the proxy applied or the site is blocking you.</p>
+
+        <div class="note">
+          <p><strong>Summary:</strong> attach a proxy in <code>process_request</code>, rotate in <code>process_exception</code>. Then tune concurrency, pool size and per-IP pressure together — changing one alone rarely helps.</p>
+        </div>
+
+        <p>The file lives in the <code>scrapy/</code> directory of <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">xydaili-proxy-examples</a>, with the settings documented at the top. The IPs I use come from <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>, which hands out short-lived rotating IPs in batches — a good fit for the pool above.</p>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>Read next</h2>
+          <ul>
+            <li><a href="/en/posts/proxy-pool-design.html">Four Design Decisions Behind a Crawler Proxy Pool (with Python)</a></li>
+            <li><a href="/en/posts/proxy-error-troubleshooting.html">Proxy Errors 407, 406, 403 and Timeouts: How to Tell Them Apart</a></li>
+            <li><a href="/en/posts/crawler-rate-limit.html">Rate Limiting and Etiquette: Don't Take Down Someone's Site</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh's Notes</strong><br>Backend and data-collection notes I would otherwise forget.</div>
+      <nav class="links" aria-label="Footer navigation">
+        <a href="/en/">Home</a>
+        <a href="/en/about.html">About</a>
+        <a href="/feed.xml">RSS</a>
+        <a href="/sitemap.xml">Sitemap</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="/" hreflang="zh-CN" lang="zh-CN">中文</a>
+      </nav>
+    </div>
+    <p class="disclaimer">Personal technical notes. Measurements come from my own environment and may differ on yours. The proxy service referenced in the examples is <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理 (Xingyue Proxy)</a>, used for demonstration only — not a purchase recommendation.</p>
+    <p class="disclaimer">&copy; 2026 pstoh · Content licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a></p>
+  </div>
+</footer>
+</body>
+</html>

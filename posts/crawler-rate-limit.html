@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>采集限速与合规：别把对方站点打挂 - pstoh 的技术笔记</title>
+<meta name="description" content="换 IP 能绕开限流，但绕不开对方的服务容量。从单站限速、指数退避加抖动、缓存增量到分布式令牌桶，聊聊怎么在拿到数据的同时不打扰对方站点。">
+<meta name="keywords" content="爬虫限速,指数退避,令牌桶,分布式限速,爬虫合规,robots.txt">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/posts/crawler-rate-limit.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/crawler-rate-limit.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/crawler-rate-limit.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/crawler-rate-limit.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="pstoh 的技术笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="采集限速与合规：别把对方站点打挂">
+<meta property="og:description" content="换 IP 能绕开限流，但绕不开对方的服务容量。">
+<meta property="og:url" content="https://pstoh.github.io/posts/crawler-rate-limit.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta property="article:published_time" content="2026-09-25">
+<meta property="article:section" content="采集规范">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="采集限速与合规：别把对方站点打挂">
+<meta name="twitter:description" content="换 IP 能绕开限流，但绕不开对方的服务容量。">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://pstoh.github.io/posts/crawler-rate-limit.html#post",
+      "headline": "采集限速与合规：别把对方站点打挂",
+      "description": "单站限速、指数退避加抖动、缓存增量、分布式令牌桶，以及采集的合规边界。",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-09-25",
+      "dateModified": "2026-09-27",
+      "author": { "@type": "Person", "name": "pstoh", "url": "https://pstoh.github.io/about.html" },
+      "publisher": { "@type": "Person", "name": "pstoh" },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pstoh.github.io/posts/crawler-rate-limit.html" },
+      "keywords": "爬虫限速, 指数退避, 令牌桶, 爬虫合规",
+      "articleSection": "采集规范"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://pstoh.github.io/" },
+        { "@type": "ListItem", "position": 2, "name": "采集限速与合规", "item": "https://pstoh.github.io/posts/crawler-rate-limit.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/"><span class="dot">p</span>pstoh 的技术笔记</a>
+    <nav class="site-nav" aria-label="站点导航">
+      <a href="/">首页</a>
+      <a href="/about.html">关于</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>采集限速与合规
+    </nav>
+
+    <article class="post">
+      <header>
+        <h1>采集限速与合规：别把对方站点打挂</h1>
+        <div class="post-meta">
+          <time datetime="2026-09-25">2026-09-25</time>
+          <span>采集规范</span>
+          <span>约 8 分钟</span>
+          <span>作者 pstoh</span>
+        </div>
+      </header>
+
+      <div class="post-body">
+        <p>几年前做过一个比价的小项目，目标站不大，我压了 200 并发。当天下午对方站点开始 502，第二天我的整段 IP 被机房封了，任务停了三天。那次之后我才认真去想一个问题：代理解决的是"我是谁"，限速解决的是"我有多克制"——这两件事都得做，缺一个都不行。</p>
+
+        <h2>换 IP 绕开的是限流，不是容量</h2>
+        <p>很多人有一种错觉：只要 IP 池够大，就能无限提速。实际上目标站面对的不只是"单 IP 限流"，还有数据库连接数、带宽、后端服务承载能力。你把请求摊到 500 个 IP 上，对方的机器该崩还是崩，只不过日志里看不到同一个来源 IP 而已。</p>
+        <p>而一旦把对方服务搞出故障，后果通常比被封 IP 麻烦得多：可能是法务函，也可能是整个 IP 段被拉黑，连带你的其他业务一起受影响。</p>
+
+        <h2>单站限速：先定一个能自我约束的数字</h2>
+        <p>我的默认起点是：</p>
+        <ul>
+          <li>对同一域名，总并发 <strong>不超过 10</strong>，QPS <strong>不超过 5</strong>；</li>
+          <li>对方站点规模小（个人站、老系统）就降到并发 2~3；</li>
+          <li>夜间可以适当放宽，白天业务高峰期收紧。</li>
+        </ul>
+        <p>注意"总并发"是跨 IP 汇总的。加了代理之后，很多人只盯着单 IP 的并发，结果 50 个 IP 各开 5 并发，对目标站就是 250 并发——等于没限速。</p>
+
+        <h3>用 Redis 做全局令牌桶</h3>
+        <p>多进程、多机器的时候，本地计数器各算各的，汇总起来就失控了。把限速器放到 Redis 里，全局共用一份配额：</p>
+        <pre><code>import time
+
+import redis
+
+TOKEN_BUCKET_LUA = """
+local key = KEYS[1]
+local rate = tonumber(ARGV[1])        -- 每秒补充多少令牌
+local burst = tonumber(ARGV[2])       -- 桶容量
+local now = tonumber(ARGV[3])
+
+local data = redis.call('HMGET', key, 'tokens', 'ts')
+local tokens = tonumber(data[1]) or burst
+local ts = tonumber(data[2]) or now
+
+tokens = math.min(burst, tokens + (now - ts) * rate)
+if tokens &lt; 1 then
+    redis.call('HMSET', key, 'tokens', tokens, 'ts', now)
+    return 0
+end
+tokens = tokens - 1
+redis.call('HMSET', key, 'tokens', tokens, 'ts', now)
+return 1
+"""
+
+client = redis.Redis(decode_responses=True)
+script = client.register_script(TOKEN_BUCKET_LUA)
+
+
+def allow(domain, rate=5, burst=10):
+    """对 domain 这个站点申请一个令牌，拿到才能发请求。"""
+    ok = script(keys=["rl:%s" % domain],
+                args=[rate, burst, time.time()])
+    return bool(ok)</code></pre>
+        <p>用法就是发请求前先问一句 <code>if not allow(domain): time.sleep(0.2)</code>，简单但有效。桶的粒度按域名算，别按 URL 算，否则等于没限。</p>
+
+        <h2>退避重试：指数 + 抖动</h2>
+        <p>被限流时立刻重试是最糟的反应，它会把"偶发限流"变成"持续被封"。正确姿势是指数退避，并且加随机抖动——否则几百个任务会在同一时刻一起重试，形成新的流量尖峰：</p>
+        <pre><code>import random
+import time
+
+
+def backoff_sleep(attempt, base=1.0, cap=60.0):
+    """第 attempt 次失败后的等待时间：1s, 2s, 4s ... 最多 60s，并加随机抖动。"""
+    delay = min(cap, base * (2 ** attempt))
+    delay = delay * (0.5 + random.random() * 0.5)   # 抖动，避免同时重试
+    time.sleep(delay)</code></pre>
+        <p>另外要区分错误类型：403/429 这种明确被拒的，退避要长；超时这种可能只是线路抖动，退避可以短。一刀切的重试策略基本都是错的。</p>
+
+        <h2>缓存与增量：最省流量的优化</h2>
+        <p>比"抓得更快"更有效的是"抓得更少"。三个做法按性价比排序：</p>
+        <ol>
+          <li><strong>列表页做增量</strong>：用上次抓到的最大时间戳/ID 做条件，别每次全量翻页；</li>
+          <li><strong>详情页走缓存</strong>：URL 级别的响应缓存（带 TTL），重复的 URL 直接读本地；</li>
+          <li><strong>用条件请求</strong>：带上 <code>If-Modified-Since</code> / <code>ETag</code>，对方返回 304 时几乎没有代价。</li>
+        </ol>
+        <p>我在一个日更的任务里加完这三条，每天的请求量从 40 万降到 6 万，目标站的响应时间也明显变好了。</p>
+
+        <h2>合规这条线要自己心里有数</h2>
+        <ul>
+          <li><strong>robots.txt 是底线不是上限。</strong>它没禁止，不等于你可以在对方高峰时段压满它。</li>
+          <li><strong>别采个人隐私数据。</strong>手机号、身份证、住址这类信息，即使页面上有也别落库，风险远大于收益。</li>
+          <li><strong>别绕过付费墙。</strong>用技术手段拿到本该付费的内容，属于典型的侵权场景。</li>
+          <li><strong>标明身份。</strong>给爬虫起个能联系到你的 User-Agent，真有纠纷时对方更愿意先联系你而不是直接封禁。</li>
+          <li><strong>公开数据也注意频率。</strong>有公开 API 的优先用 API，通常比爬页面稳定得多。</li>
+        </ul>
+
+        <div class="note">
+          <p><strong>小结：</strong>代理管"我是谁"，限速管"我有多克制"，缓存管"我能不能少抓点"。三者配上，采集才能长期稳定地跑下去——被封一次停三天，比一开始慢一点代价大得多。</p>
+        </div>
+
+        <p>顺便说下代理的角色：把请求分散到多个出口 IP，本质是为了让单 IP 的请求频率保持在"正常用户"的量级，而不是为了把并发堆到对方身上去。我用的是 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，短效 IP 会自动轮换，配合上面这套全局限速用起来比较稳。具体的池子实现和 18 种语言示例都在 <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">xydaili-proxy-examples</a> 里。</p>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>接着看</h2>
+          <ul>
+            <li><a href="/posts/proxy-pool-design.html">爬虫代理池的四个关键设计（附 Python 实现）</a></li>
+            <li><a href="/posts/proxy-error-troubleshooting.html">代理返回 407、406、403、超时，分别怎么排查</a></li>
+            <li><a href="/posts/how-http-proxy-works.html">HTTP 代理到底怎么工作：一次请求的完整旅程</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh 的技术笔记</strong><br>记录后端与数据采集里那些不写下来就会忘的事。</div>
+      <nav class="links" aria-label="页脚导航">
+        <a href="/">首页</a>
+        <a href="/about.html">关于</a>
+        <a href="/feed.xml">RSS 订阅</a>
+        <a href="/sitemap.xml">站点地图</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>
+      </nav>
+    </div>
+    <p class="disclaimer">本站是个人技术笔记，文章里的实测数据来自我自己的网络环境，换环境结果可能不同。示例中提到的代理服务为 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，仅作技术演示，不构成购买建议。</p>
+    <p class="disclaimer">© 2026 pstoh · 内容采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a> 许可</p>
+  </div>
+</footer>
+</body>
+</html>

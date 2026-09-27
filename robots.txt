@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pstoh.github.io/sitemap.xml

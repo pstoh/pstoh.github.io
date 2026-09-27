@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>pstoh 的技术笔记</title>
+    <link>https://pstoh.github.io/</link>
+    <description>爬虫、代理IP 与数据采集实战笔记：代理池设计、Scrapy 中间件、错误码排查、限速与合规。</description>
+    <language>zh-CN</language>
+    <copyright>CC BY 4.0 · pstoh</copyright>
+    <managingEditor>pstoh</managingEditor>
+    <generator>handwritten static HTML</generator>
+    <lastBuildDate>Sun, 27 Sep 2026 12:00:00 +0800</lastBuildDate>
+    <atom:link href="https://pstoh.github.io/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>采集限速与合规：别把对方站点打挂</title>
+      <link>https://pstoh.github.io/posts/crawler-rate-limit.html</link>
+      <guid isPermaLink="true">https://pstoh.github.io/posts/crawler-rate-limit.html</guid>
+      <pubDate>Fri, 25 Sep 2026 10:00:00 +0800</pubDate>
+      <category>采集规范</category>
+      <description><![CDATA[换 IP 能绕开限流，但绕不开对方的服务容量。从单站限速、指数退避加抖动、缓存增量到分布式令牌桶，聊聊怎么在拿到数据的同时不打扰对方站点。]]></description>
+    </item>
+
+    <item>
+      <title>Scrapy 代理中间件：每个请求自动换 IP</title>
+      <link>https://pstoh.github.io/posts/scrapy-proxy-middleware.html</link>
+      <guid isPermaLink="true">https://pstoh.github.io/posts/scrapy-proxy-middleware.html</guid>
+      <pubDate>Wed, 16 Sep 2026 10:00:00 +0800</pubDate>
+      <category>Scrapy</category>
+      <description><![CDATA[下载中间件的两个钩子各管什么、重试为什么没换 IP、为什么加了代理失败请求反而变多。附一份生产可用的中间件代码与 settings 配置。]]></description>
+    </item>
+
+    <item>
+      <title>代理返回 407、406、403、超时，分别怎么排查</title>
+      <link>https://pstoh.github.io/posts/proxy-error-troubleshooting.html</link>
+      <guid isPermaLink="true">https://pstoh.github.io/posts/proxy-error-troubleshooting.html</guid>
+      <pubDate>Tue, 08 Sep 2026 10:00:00 +0800</pubDate>
+      <category>排错</category>
+      <description><![CDATA[407 是代理层要账号密码，406 是提取太频繁，403 多半是白名单或目标站反爬，502/504 是节点问题。一张排查表加逐条处置方式。]]></description>
+    </item>
+
+    <item>
+      <title>爬虫代理池的四个关键设计（附 Python 实现）</title>
+      <link>https://pstoh.github.io/posts/proxy-pool-design.html</link>
+      <guid isPermaLink="true">https://pstoh.github.io/posts/proxy-pool-design.html</guid>
+      <pubDate>Sat, 29 Aug 2026 10:00:00 +0800</pubDate>
+      <category>架构</category>
+      <description><![CDATA[为什么不能循环单条提取 IP、低水位补货怎么算、失效 IP 用 expire 还是本地时间剔除、单条 IP 该给多少并发。含可直接运行的 Python 代理池。]]></description>
+    </item>
+
+    <item>
+      <title>HTTP 代理到底怎么工作：一次请求的完整旅程</title>
+      <link>https://pstoh.github.io/posts/how-http-proxy-works.html</link>
+      <guid isPermaLink="true">https://pstoh.github.io/posts/how-http-proxy-works.html</guid>
+      <pubDate>Tue, 18 Aug 2026 10:00:00 +0800</pubDate>
+      <category>基础</category>
+      <description><![CDATA[绝对 URL 与 CONNECT 隧道差在哪里、HTTPS 为什么必须先握手、白名单和账号密码两种认证各自适用什么场景，以及 407 到底是谁返回的。]]></description>
+    </item>
+  </channel>
+</rss>

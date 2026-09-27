@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rate Limiting and Etiquette: Don't Take Down Someone's Site - pstoh's Notes</title>
+<meta name="description" content="Rotating IPs bypasses per-IP throttling, not the target's capacity. Per-domain limits, exponential backoff with jitter, caching and incremental crawls, plus a distributed Redis token bucket.">
+<meta name="keywords" content="crawler rate limiting,exponential backoff jitter,redis token bucket,politeness crawler,per-domain concurrency">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/en/posts/crawler-rate-limit.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/crawler-rate-limit.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/crawler-rate-limit.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/crawler-rate-limit.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="pstoh's Notes">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Rate Limiting and Etiquette: Don't Take Down Someone's Site">
+<meta property="og:description" content="Rotating IPs bypasses per-IP throttling, not the target's capacity.">
+<meta property="og:url" content="https://pstoh.github.io/en/posts/crawler-rate-limit.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta property="article:published_time" content="2026-09-25">
+<meta property="article:section" content="Etiquette">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Rate Limiting and Etiquette: Don't Take Down Someone's Site">
+<meta name="twitter:description" content="Rotating IPs bypasses per-IP throttling, not the target's capacity.">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://pstoh.github.io/en/posts/crawler-rate-limit.html#post",
+      "headline": "Rate Limiting and Etiquette: Don't Take Down Someone's Site",
+      "description": "Per-domain limits, exponential backoff with jitter, caching and a distributed token bucket for crawlers.",
+      "inLanguage": "en",
+      "datePublished": "2026-09-25",
+      "dateModified": "2026-09-27",
+      "author": { "@type": "Person", "name": "pstoh", "url": "https://pstoh.github.io/en/about.html" },
+      "publisher": { "@type": "Person", "name": "pstoh" },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pstoh.github.io/en/posts/crawler-rate-limit.html" },
+      "keywords": "crawler rate limiting, exponential backoff, token bucket",
+      "articleSection": "Etiquette"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://pstoh.github.io/en/" },
+        { "@type": "ListItem", "position": 2, "name": "Rate Limiting and Etiquette", "item": "https://pstoh.github.io/en/posts/crawler-rate-limit.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/en/"><span class="dot">p</span>pstoh's Notes</a>
+    <nav class="site-nav" aria-label="Site navigation">
+      <a href="/en/">Home</a>
+      <a href="/en/about.html">About</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+      <a href="/posts/crawler-rate-limit.html" hreflang="zh-CN" lang="zh-CN">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/en/">Home</a><span>/</span>Rate Limiting and Etiquette
+    </nav>
+
+    <article class="post">
+      <header>
+        <h1>Rate Limiting and Etiquette: Don't Take Down Someone's Site</h1>
+        <div class="post-meta">
+          <time datetime="2026-09-25">2026-09-25</time>
+          <span>Etiquette</span>
+          <span>8 min read</span>
+          <span>by pstoh</span>
+        </div>
+      </header>
+
+      <div class="post-body">
+        <p>Years ago I built a small price-comparison crawler against a site that was not very large. I ran 200 concurrent requests. By the afternoon their site was returning 502s, and the next day my whole block of IPs was null-routed and the job was dead for three days.</p>
+        <p>That is when I stopped treating proxies as a substitute for restraint. A proxy answers <em>"who am I"</em>. Rate limiting answers <em>"how hard am I pushing"</em>. You need both.</p>
+
+        <h2>Rotation bypasses per-IP limits, not capacity</h2>
+        <p>There is a persistent illusion that a big enough IP pool means unlimited throughput. But the target is not only throttling per IP — it has database connections, bandwidth and backend services with their own ceilings. Spread the same request volume over 500 IPs and the origin still falls over; the only difference is that the logs no longer show one culprit address.</p>
+        <p>And the consequences of breaking someone's service are worse than a temporary block: legal letters, or an entire IP range blacklisted along with your other, unrelated projects.</p>
+
+        <h2>Per-domain limits: pick numbers you will respect</h2>
+        <p>My defaults:</p>
+        <ul>
+          <li>At most <strong>10 concurrent</strong> requests and <strong>5 requests per second</strong> to a single domain;</li>
+          <li>For small sites (personal blogs, legacy systems) drop to 2–3 concurrent;</li>
+          <li>Relax slightly overnight, tighten during their business hours.</li>
+        </ul>
+        <p>Note that "concurrent" means aggregated across all proxies. After adding rotation, people often only watch per-IP concurrency: 50 IPs &times; 5 concurrent each is 250 concurrent requests to the target — which is not rate limiting at all.</p>
+
+        <h3>A global token bucket in Redis</h3>
+        <p>With multiple processes or machines, local counters add up to something you did not intend. Keep the limiter in Redis so every worker draws from one budget:</p>
+        <pre><code>import time
+
+import redis
+
+TOKEN_BUCKET_LUA = """
+local key = KEYS[1]
+local rate = tonumber(ARGV[1])        -- tokens added per second
+local burst = tonumber(ARGV[2])       -- bucket capacity
+local now = tonumber(ARGV[3])
+
+local data = redis.call('HMGET', key, 'tokens', 'ts')
+local tokens = tonumber(data[1]) or burst
+local ts = tonumber(data[2]) or now
+
+tokens = math.min(burst, tokens + (now - ts) * rate)
+if tokens &lt; 1 then
+    redis.call('HMSET', key, 'tokens', tokens, 'ts', now)
+    return 0
+end
+tokens = tokens - 1
+redis.call('HMSET', key, 'tokens', tokens, 'ts', now)
+return 1
+"""
+
+client = redis.Redis(decode_responses=True)
+script = client.register_script(TOKEN_BUCKET_LUA)
+
+
+def allow(domain, rate=5, burst=10):
+    """Ask for a token before hitting this domain."""
+    ok = script(keys=["rl:%s" % domain],
+                args=[rate, burst, time.time()])
+    return bool(ok)</code></pre>
+        <p>Usage is one line before each request: <code>if not allow(domain): time.sleep(0.2)</code>. Key the bucket by domain, never by URL — per-URL buckets are equivalent to no limit at all.</p>
+
+        <h2>Backoff: exponential, with jitter</h2>
+        <p>Retrying immediately after being throttled is the worst possible response — it converts a temporary limit into a sustained ban. Use exponential backoff, and add randomness, or hundreds of queued tasks will retry in lockstep and create a fresh spike:</p>
+        <pre><code>import random
+import time
+
+
+def backoff_sleep(attempt, base=1.0, cap=60.0):
+    """After failure N: 1s, 2s, 4s ... capped at 60s, with jitter."""
+    delay = min(cap, base * (2 ** attempt))
+    delay = delay * (0.5 + random.random() * 0.5)   # spread the retries out
+    time.sleep(delay)</code></pre>
+        <p>Also branch on the error class: an explicit 403 or 429 deserves a long wait; a timeout may just be a flaky line and can be retried sooner. One uniform retry policy is always wrong for one of the two.</p>
+
+        <h2>Caching and incremental crawls: the cheapest optimisation</h2>
+        <p>Fetching less beats fetching faster. In order of payoff:</p>
+        <ol>
+          <li><strong>Incremental list pages</strong> — filter by the newest timestamp or ID you already have instead of paginating everything;</li>
+          <li><strong>Response cache with a TTL</strong> — the same URL within the window is served locally;</li>
+          <li><strong>Conditional requests</strong> — send <code>If-Modified-Since</code> or <code>ETag</code>; a 304 is nearly free for the origin.</li>
+        </ol>
+        <p>Applied to a daily job of mine, these three cut request volume from roughly 400k to 60k per day, and the target's response times improved noticeably.</p>
+
+        <h2>Where the ethical line sits</h2>
+        <ul>
+          <li><strong>robots.txt is a floor, not a ceiling.</strong> Nothing forbidding you does not mean you should saturate the site at peak hours.</li>
+          <li><strong>Do not collect personal data.</strong> Phone numbers, ID numbers, home addresses — even when they are on a public page, the exposure is not worth it.</li>
+          <li><strong>Do not bypass paywalls.</strong> Technically circumventing a paid access control is straightforwardly infringing.</li>
+          <li><strong>Identify yourself.</strong> Use a User-Agent that points to a contact; if something goes wrong, people prefer emailing you over blocking you.</li>
+          <li><strong>Prefer official APIs</strong> when they exist — they are usually far more stable than scraping HTML.</li>
+        </ul>
+
+        <div class="note">
+          <p><strong>Summary:</strong> proxies handle "who am I", rate limiting handles "how hard am I pushing", caching handles "can I fetch less". Together they keep a crawler alive for months — and a three-day outage from being blocked costs far more than starting a little slower.</p>
+        </div>
+
+        <p>One note on where proxies fit: spreading requests over many egress IPs keeps each individual IP's request rate in the range a normal user produces. It is not a way to push more load onto someone else's servers. The lines I use are from <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>, rotating short-lived IPs, which sits nicely under the global limiter above. The pool implementation and examples in 18 languages are in <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">xydaili-proxy-examples</a>.</p>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>Read next</h2>
+          <ul>
+            <li><a href="/en/posts/proxy-pool-design.html">Four Design Decisions Behind a Crawler Proxy Pool (with Python)</a></li>
+            <li><a href="/en/posts/proxy-error-troubleshooting.html">Proxy Errors 407, 406, 403 and Timeouts: How to Tell Them Apart</a></li>
+            <li><a href="/en/posts/how-http-proxy-works.html">How an HTTP Proxy Actually Works: A Request's Full Journey</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh's Notes</strong><br>Backend and data-collection notes I would otherwise forget.</div>
+      <nav class="links" aria-label="Footer navigation">
+        <a href="/en/">Home</a>
+        <a href="/en/about.html">About</a>
+        <a href="/feed.xml">RSS</a>
+        <a href="/sitemap.xml">Sitemap</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="/" hreflang="zh-CN" lang="zh-CN">中文</a>
+      </nav>
+    </div>
+    <p class="disclaimer">Personal technical notes. Measurements come from my own environment and may differ on yours. The proxy service referenced in the examples is <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理 (Xingyue Proxy)</a>, used for demonstration only — not a purchase recommendation.</p>
+    <p class="disclaimer">&copy; 2026 pstoh · Content licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a></p>
+  </div>
+</footer>
+</body>
+</html>

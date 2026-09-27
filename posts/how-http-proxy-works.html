@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTTP 代理到底怎么工作：一次请求的完整旅程 - pstoh 的技术笔记</title>
+<meta name="description" content="讲清 HTTP 代理转发请求的两种方式（绝对 URL 与 CONNECT 隧道）、HTTPS 为什么必须先握手、白名单与账号密码两种认证的区别，以及 407 到底是谁返回的。">
+<meta name="keywords" content="HTTP代理原理,CONNECT隧道,代理认证,407,绝对URL,HTTPS代理">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/posts/how-http-proxy-works.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/how-http-proxy-works.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/how-http-proxy-works.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/how-http-proxy-works.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="pstoh 的技术笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="HTTP 代理到底怎么工作：一次请求的完整旅程">
+<meta property="og:description" content="绝对 URL、CONNECT 隧道、两种认证方式，以及 407 是谁返回的。">
+<meta property="og:url" content="https://pstoh.github.io/posts/how-http-proxy-works.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta property="article:published_time" content="2026-08-18">
+<meta property="article:section" content="基础">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HTTP 代理到底怎么工作：一次请求的完整旅程">
+<meta name="twitter:description" content="绝对 URL、CONNECT 隧道、两种认证方式，以及 407 是谁返回的。">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://pstoh.github.io/posts/how-http-proxy-works.html#post",
+      "headline": "HTTP 代理到底怎么工作：一次请求的完整旅程",
+      "description": "讲清 HTTP 代理转发请求的两种方式、HTTPS 为什么必须先握手、两种认证的区别，以及 407 到底是谁返回的。",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-08-18",
+      "dateModified": "2026-09-27",
+      "author": { "@type": "Person", "name": "pstoh", "url": "https://pstoh.github.io/about.html" },
+      "publisher": { "@type": "Person", "name": "pstoh" },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pstoh.github.io/posts/how-http-proxy-works.html" },
+      "keywords": "HTTP代理原理, CONNECT隧道, 代理认证, 407",
+      "articleSection": "基础"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://pstoh.github.io/" },
+        { "@type": "ListItem", "position": 2, "name": "HTTP 代理到底怎么工作", "item": "https://pstoh.github.io/posts/how-http-proxy-works.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/"><span class="dot">p</span>pstoh 的技术笔记</a>
+    <nav class="site-nav" aria-label="站点导航">
+      <a href="/">首页</a>
+      <a href="/about.html">关于</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>HTTP 代理到底怎么工作
+    </nav>
+
+    <article class="post">
+      <header>
+        <h1>HTTP 代理到底怎么工作：一次请求的完整旅程</h1>
+        <div class="post-meta">
+          <time datetime="2026-08-18">2026-08-18</time>
+          <span>基础</span>
+          <span>约 6 分钟</span>
+          <span>作者 pstoh</span>
+        </div>
+      </header>
+
+      <div class="post-body">
+        <p>刚接触代理那会儿，我以为它就是个"转发器"——地址填进去，请求就出去了。直到有次用 HTTP 代理去抓一个 https 站点，怎么都超时，抓包才发现自己压根没搞明白 CONNECT 隧道是怎么回事。这篇就把这一层讲透，后面排错会轻松很多。</p>
+
+        <h2>代理服务器站在哪个位置</h2>
+        <p>直连时链路是「客户端 → 目标服务器」。挂上代理就变成「客户端 → 代理服务器 → 目标服务器」，目标站看到的来源 IP 是代理的出口 IP，而不是你家宽带的 IP。"换 IP"的全部原理就这么回事。</p>
+        <p>这里没有魔法：代理只是替你发请求、再把响应原样带回来。它不改你的请求内容，也不负责加密。</p>
+
+        <h2>转发请求的两种方式</h2>
+        <h3>1. 绝对 URL —— 只有 http 这么干</h3>
+        <p>请求行里写的不是路径，而是完整地址：</p>
+        <pre><code>GET http://example.com/index.html HTTP/1.1
+Host: example.com</code></pre>
+        <p>代理看到这种带主机名的完整地址，就知道该替你去哪台机器取。这也解释了另一个常见问题：自己手写 HTTP 客户端走代理时，<code>path</code> 里要填完整 URL，很多语言的原生库不会帮你补。</p>
+
+        <h3>2. CONNECT 隧道 —— https 必须走这条路</h3>
+        <p>https 的正文是加密的，代理看不懂、也没必要看懂。客户端先让代理开一条 TCP 通道：</p>
+        <pre><code>CONNECT example.com:443 HTTP/1.1
+Host: example.com:443</code></pre>
+        <p>代理回一个 200 之后，客户端就在这条通道里直接跟目标站做 TLS 握手。从此代理只负责搬字节，证书校验和加密都是端到端的。所以用 HTTP 代理抓 https 会稍慢一点：多了一次 CONNECT 往返。</p>
+        <blockquote><p>如果你是自己写 socket 客户端，忘发 CONNECT 是最容易犯的错——表现是代理直接回 400，或者请求一直挂着不动。</p></blockquote>
+
+        <h2>代理怎么确认你有权用它</h2>
+        <p>代理是花钱买的资源，不可能谁都能白用。常见两种认证方式：</p>
+        <table>
+          <thead>
+            <tr><th>方式</th><th>怎么工作</th><th>适合什么场景</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>IP 白名单</td><td>把调用方的出口 IP 加进白名单，代理放行</td><td>云主机上跑定时任务、出口 IP 固定</td></tr>
+            <tr><td>账号密码</td><td>请求头里带 <code>Proxy-Authorization</code></td><td>本地开发、出口 IP 经常变</td></tr>
+          </tbody>
+        </table>
+        <p>白名单看着省事，但有个坑：出口 IP 是动态的就麻烦了。家庭宽带重播号会换 IP，部分云厂商的弹性 IP 也会漂。我碰到过好几次"昨天还跑得好好的，今天全员 403"，查半天最后都是出口 IP 变了。</p>
+        <p>至于 <strong>407</strong>，它是代理层返回的 <em>Proxy Authentication Required</em>，含义非常明确：这条线路要账号密码。如果你是白名单模式却收到 407，说明这条线路跟你的白名单对不上，换一条就行，别去查目标站。</p>
+
+        <h2>亲手验证一次</h2>
+        <p>用 curl 最直观，参数全摆在明面上：</p>
+        <pre><code># 带账号密码，看出口 IP 变了没有
+curl -x http://用户名:密码@代理IP:端口 https://httpbin.org/ip
+
+# 白名单模式则不用带账号
+curl -x http://代理IP:端口 https://httpbin.org/ip</code></pre>
+        <p>换到 Python，注意把两件事分开：取 IP 的请求要直连，用 IP 访问目标站时才走代理。</p>
+        <pre><code>import requests
+
+session = requests.Session()
+session.trust_env = False   # 取 IP 这一步别走环境变量里的代理
+
+resp = session.get("http://api.xydaili.net:2022/tools/ip.ashx",
+                   params={"action": "GetIP", "OrderNumber": "订单号",
+                           "protocol": 1, "qty": 1, "split": "json"},
+                   timeout=25)
+item = resp.json()["data"][0]
+proxy = "http://%s:%s" % (item["ip"], item["port"])
+
+r = requests.get("http://www.baidu.com",
+                 proxies={"http": proxy, "https": proxy},
+                 timeout=15)
+print(r.status_code)</code></pre>
+
+        <h2>三个常见的误解</h2>
+        <ul>
+          <li><strong>代理不是 VPN。</strong>VPN 在网络层接管全部流量，代理只作用于你显式配了代理的那个客户端，浏览器挂代理不影响系统里的其他程序。</li>
+          <li><strong>HTTP 代理不给流量加密。</strong>http 站点在代理这一跳是明文的，https 的安全性来自 TLS 本身，跟代理没关。</li>
+          <li><strong>代理不等于匿踪。</strong>高匿代理只是不往目标站带你的真实 IP，目标站的访问日志照样记着出口 IP，该有的痕迹一个不少。</li>
+        </ul>
+
+        <div class="note">
+          <p><strong>小结：</strong>记三句话就够了——http 走绝对 URL、https 走 CONNECT、认证失败先看 407 是代理层发的还是目标站发的。</p>
+        </div>
+
+        <p>我平时做采集用的是 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，短效 IP 自动轮换，API 实时提取和白名单两种模式都支持，上面这些验证就是拿它的线路跑的。第一次接触的话，建议先领几个试用 IP，把链路跑通再谈优化。</p>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>接着看</h2>
+          <ul>
+            <li><a href="/posts/proxy-error-troubleshooting.html">代理返回 407、406、403、超时，分别怎么排查</a></li>
+            <li><a href="/posts/proxy-pool-design.html">爬虫代理池的四个关键设计（附 Python 实现）</a></li>
+            <li><a href="/posts/scrapy-proxy-middleware.html">Scrapy 代理中间件：每个请求自动换 IP</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh 的技术笔记</strong><br>记录后端与数据采集里那些不写下来就会忘的事。</div>
+      <nav class="links" aria-label="页脚导航">
+        <a href="/">首页</a>
+        <a href="/about.html">关于</a>
+        <a href="/feed.xml">RSS 订阅</a>
+        <a href="/sitemap.xml">站点地图</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>
+      </nav>
+    </div>
+    <p class="disclaimer">本站是个人技术笔记，文章里的实测数据来自我自己的网络环境，换环境结果可能不同。示例中提到的代理服务为 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，仅作技术演示，不构成购买建议。</p>
+    <p class="disclaimer">© 2026 pstoh · 内容采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a> 许可</p>
+  </div>
+</footer>
+</body>
+</html>

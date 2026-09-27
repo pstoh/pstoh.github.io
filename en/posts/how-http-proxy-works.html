@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How an HTTP Proxy Actually Works: A Request's Full Journey - pstoh's Notes</title>
+<meta name="description" content="Absolute-form URLs versus CONNECT tunnels, why HTTPS needs an extra round trip, IP allowlisting versus username/password authentication, and who really returns a 407.">
+<meta name="keywords" content="how http proxy works,CONNECT tunnel,proxy authentication,407 Proxy Authentication Required,https proxy">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/en/posts/how-http-proxy-works.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/how-http-proxy-works.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/how-http-proxy-works.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/how-http-proxy-works.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="pstoh's Notes">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="How an HTTP Proxy Actually Works: A Request's Full Journey">
+<meta property="og:description" content="Absolute-form URLs, CONNECT tunnels, two ways to authenticate, and who returns a 407.">
+<meta property="og:url" content="https://pstoh.github.io/en/posts/how-http-proxy-works.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta property="article:published_time" content="2026-08-18">
+<meta property="article:section" content="Fundamentals">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How an HTTP Proxy Actually Works">
+<meta name="twitter:description" content="Absolute-form URLs, CONNECT tunnels, two ways to authenticate, and who returns a 407.">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://pstoh.github.io/en/posts/how-http-proxy-works.html#post",
+      "headline": "How an HTTP Proxy Actually Works: A Request's Full Journey",
+      "description": "Absolute-form URLs versus CONNECT tunnels, HTTPS handshakes, and the two authentication models.",
+      "inLanguage": "en",
+      "datePublished": "2026-08-18",
+      "dateModified": "2026-09-27",
+      "author": { "@type": "Person", "name": "pstoh", "url": "https://pstoh.github.io/en/about.html" },
+      "publisher": { "@type": "Person", "name": "pstoh" },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pstoh.github.io/en/posts/how-http-proxy-works.html" },
+      "keywords": "http proxy, CONNECT tunnel, proxy authentication, 407",
+      "articleSection": "Fundamentals"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://pstoh.github.io/en/" },
+        { "@type": "ListItem", "position": 2, "name": "How an HTTP Proxy Actually Works", "item": "https://pstoh.github.io/en/posts/how-http-proxy-works.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/en/"><span class="dot">p</span>pstoh's Notes</a>
+    <nav class="site-nav" aria-label="Site navigation">
+      <a href="/en/">Home</a>
+      <a href="/en/about.html">About</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+      <a href="/posts/how-http-proxy-works.html" hreflang="zh-CN" lang="zh-CN">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/en/">Home</a><span>/</span>How an HTTP Proxy Actually Works
+    </nav>
+
+    <article class="post">
+      <header>
+        <h1>How an HTTP Proxy Actually Works: A Request's Full Journey</h1>
+        <div class="post-meta">
+          <time datetime="2026-08-18">2026-08-18</time>
+          <span>Fundamentals</span>
+          <span>6 min read</span>
+          <span>by pstoh</span>
+        </div>
+      </header>
+
+      <div class="post-body">
+        <p>When I started using proxies I assumed they were just "forwarders": put in an address, the request goes out. Then I spent an afternoon debugging a timeout against an HTTPS site, and a packet capture showed I had never understood CONNECT tunneling at all. This post is the explanation I needed back then — it makes every later debugging session shorter.</p>
+
+        <h2>Where the proxy sits</h2>
+        <p>Direct traffic goes <em>client &rarr; origin server</em>. With a proxy it becomes <em>client &rarr; proxy &rarr; origin server</em>, and the origin sees the proxy's egress IP instead of yours. That is the entire mechanism behind "IP rotation".</p>
+        <p>There is no magic involved: the proxy sends your request on your behalf and returns the response unchanged. It does not rewrite your payload, and it does not encrypt anything.</p>
+
+        <h2>Two ways to forward a request</h2>
+        <h3>1. Absolute-form URL (plain HTTP only)</h3>
+        <p>The request line carries the full URL instead of just a path:</p>
+        <pre><code>GET http://example.com/index.html HTTP/1.1
+Host: example.com</code></pre>
+        <p>Seeing a host in the request target tells the proxy where to connect. This explains a classic bug: when you hand-roll an HTTP client, the <code>path</code> you pass must be the complete URL. Most standard libraries do that for you; hand-written sockets usually do not.</p>
+
+        <h3>2. CONNECT tunnel (required for HTTPS)</h3>
+        <p>HTTPS payloads are encrypted, so the proxy cannot read them — and does not need to. The client first asks the proxy to open a raw TCP channel:</p>
+        <pre><code>CONNECT example.com:443 HTTP/1.1
+Host: example.com:443</code></pre>
+        <p>Once the proxy answers <code>200</code>, the client performs its TLS handshake with the origin <em>through</em> that channel. From then on the proxy just moves bytes; certificates and encryption are end to end. That is why HTTPS through an HTTP proxy is slightly slower: one extra round trip to establish the tunnel.</p>
+        <blockquote><p>If you wrote your own socket client and forgot CONNECT, the symptom is either an immediate <code>400</code> from the proxy or a request that hangs forever.</p></blockquote>
+
+        <h2>How a proxy decides you are allowed in</h2>
+        <p>Proxy bandwidth costs money, so access is gated. Two common models:</p>
+        <table>
+          <thead>
+            <tr><th>Model</th><th>How it works</th><th>Good fit</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>IP allowlist</td><td>Your egress IP is registered; the proxy lets it through</td><td>Servers with a stable IP, scheduled jobs</td></tr>
+            <tr><td>Username / password</td><td>Credentials sent in the <code>Proxy-Authorization</code> header</td><td>Local development, IPs that change</td></tr>
+          </tbody>
+        </table>
+        <p>Allowlisting looks simpler until your egress IP moves. Home connections change IP on reconnect, and some clouds float their elastic IPs. I have lost more than one afternoon to "everything worked yesterday and today every request returns 403" — always a changed egress IP.</p>
+        <p>As for <strong>407</strong>, it is <em>Proxy Authentication Required</em>, returned by the proxy itself. If you are on an allowlist setup and still see 407, that particular line expects credentials. Treat it as a bad line, swap IPs and retry — do not go debugging the origin server.</p>
+
+        <h2>Verify it yourself</h2>
+        <p>curl is the fastest way to see the whole thing:</p>
+        <pre><code># With credentials
+curl -x http://user:pass@proxy-ip:port https://httpbin.org/ip
+
+# Allowlist mode needs no credentials
+curl -x http://proxy-ip:port https://httpbin.org/ip</code></pre>
+        <p>In Python, keep two things separate: fetching an IP must go direct, while the request through the proxy is the one that carries credentials.</p>
+        <pre><code>import requests
+
+session = requests.Session()
+session.trust_env = False   # do not let env proxies hijack this call
+
+resp = session.get("http://api.xydaili.net:2022/tools/ip.ashx",
+                   params={"action": "GetIP", "OrderNumber": "YOUR-ORDER-ID",
+                           "protocol": 1, "qty": 1, "split": "json"},
+                   timeout=25)
+item = resp.json()["data"][0]
+proxy = "http://%s:%s" % (item["ip"], item["port"])
+
+r = requests.get("http://example.com",
+                 proxies={"http": proxy, "https": proxy},
+                 timeout=15)
+print(r.status_code)</code></pre>
+
+        <h2>Three myths worth dropping</h2>
+        <ul>
+          <li><strong>A proxy is not a VPN.</strong> A VPN captures all traffic at the network layer; a proxy only affects the client you configured.</li>
+          <li><strong>An HTTP proxy does not encrypt your traffic.</strong> Plain HTTP is readable at the proxy hop. HTTPS is safe because of TLS, not because of the proxy.</li>
+          <li><strong>A proxy is not anonymity.</strong> A high-anonymity proxy only hides your real IP from the origin. The origin still logs the egress IP.</li>
+        </ul>
+
+        <div class="note">
+          <p><strong>The takeaway:</strong> HTTP uses absolute-form URLs, HTTPS uses CONNECT, and an authentication failure that arrives as 407 came from the proxy rather than the site you were fetching.</p>
+        </div>
+
+        <p>I run my crawlers through <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>, which rotates short-lived IPs and supports both API extraction and allowlist modes — the checks above were run on its lines. If you are new to this, get a few trial IPs first and prove the path works end to end before optimising anything.</p>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>Read next</h2>
+          <ul>
+            <li><a href="/en/posts/proxy-error-troubleshooting.html">Proxy Errors 407, 406, 403 and Timeouts: How to Tell Them Apart</a></li>
+            <li><a href="/en/posts/proxy-pool-design.html">Four Design Decisions Behind a Crawler Proxy Pool (with Python)</a></li>
+            <li><a href="/en/posts/scrapy-proxy-middleware.html">A Scrapy Proxy Middleware That Rotates IPs per Request</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh's Notes</strong><br>Backend and data-collection notes I would otherwise forget.</div>
+      <nav class="links" aria-label="Footer navigation">
+        <a href="/en/">Home</a>
+        <a href="/en/about.html">About</a>
+        <a href="/feed.xml">RSS</a>
+        <a href="/sitemap.xml">Sitemap</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="/" hreflang="zh-CN" lang="zh-CN">中文</a>
+      </nav>
+    </div>
+    <p class="disclaimer">Personal technical notes. Measurements come from my own environment and may differ on yours. The proxy service referenced in the examples is <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理 (Xingyue Proxy)</a>, used for demonstration only — not a purchase recommendation.</p>
+    <p class="disclaimer">&copy; 2026 pstoh · Content licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a></p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pstoh's Notes | Web Scraping, Proxies and Data Collection</title>
+<meta name="description" content="Field notes on running scrapers in production: how HTTP proxies work, designing a proxy pool, Scrapy proxy middleware, decoding 407/406/403 errors, and rate limiting politely. Runnable examples in 18 languages.">
+<meta name="keywords" content="web scraping,http proxy,proxy pool,scrapy proxy middleware,ip rotation,rate limiting,407 proxy authentication">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/en/">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="pstoh's Notes">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:title" content="pstoh's Notes | Web Scraping, Proxies and Data Collection">
+<meta property="og:description" content="Field notes on running scrapers in production: proxy pools, Scrapy middleware, error decoding and rate limiting.">
+<meta property="og:url" content="https://pstoh.github.io/en/">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="pstoh's Notes">
+<meta name="twitter:description" content="Web scraping, proxies and data collection field notes">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://pstoh.github.io/en/#website",
+      "url": "https://pstoh.github.io/en/",
+      "name": "pstoh's Notes",
+      "description": "Web scraping, proxies and data collection field notes",
+      "inLanguage": "en",
+      "publisher": { "@id": "https://pstoh.github.io/#author" }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://pstoh.github.io/#author",
+      "name": "pstoh",
+      "url": "https://pstoh.github.io/en/about.html",
+      "jobTitle": "Backend / Data Collection Engineer",
+      "knowsAbout": ["Web Scraping", "HTTP Proxies", "Data Collection", "Python", "Go"],
+      "sameAs": ["https://github.com/pstoh"]
+    },
+    {
+      "@type": "ItemList",
+      "name": "Latest posts",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "url": "https://pstoh.github.io/en/posts/crawler-rate-limit.html" },
+        { "@type": "ListItem", "position": 2, "url": "https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html" },
+        { "@type": "ListItem", "position": 3, "url": "https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html" },
+        { "@type": "ListItem", "position": 4, "url": "https://pstoh.github.io/en/posts/proxy-pool-design.html" },
+        { "@type": "ListItem", "position": 5, "url": "https://pstoh.github.io/en/posts/how-http-proxy-works.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/en/"><span class="dot">p</span>pstoh's Notes</a>
+    <nav class="site-nav" aria-label="Site navigation">
+      <a href="/en/" aria-current="page">Home</a>
+      <a href="/en/about.html">About</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+      <a href="/" hreflang="zh-CN" lang="zh-CN">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap-wide">
+    <section class="hero">
+      <h1>Most scraper failures<br>are actually proxy-layer failures</h1>
+      <p class="lede">Field notes from production crawlers: which proxy to use, how to design a pool that does not hammer the extraction API, how to write a Scrapy middleware that really rotates IPs, and how to tell a proxy error from a target-site error. Every post ships runnable code, not just concepts.</p>
+      <div class="tags">
+        <span class="tag">HTTP proxies</span>
+        <span class="tag">Proxy pools &amp; IP rotation</span>
+        <span class="tag">Scrapy</span>
+        <span class="tag">Python · Go · Node.js</span>
+        <span class="tag">Rate limiting</span>
+      </div>
+    </section>
+
+    <div class="section-title">
+      <h2>Latest posts</h2>
+      <span class="hint">5 posts · newest first</span>
+    </div>
+
+    <section class="cards">
+      <article class="card">
+        <div class="meta"><span class="k">Etiquette</span><time datetime="2026-09-25">2026-09-25</time><span>8 min read</span></div>
+        <h3><a href="/en/posts/crawler-rate-limit.html">Rate Limiting and Etiquette: Don't Take Down Someone's Site</a></h3>
+        <p>Rotating IPs gets you around per-IP throttling, not around the target's capacity. Per-domain limits, exponential backoff with jitter, caching, and a Redis token bucket.</p>
+      </article>
+
+      <article class="card">
+        <div class="meta"><span class="k">Scrapy</span><time datetime="2026-09-16">2026-09-16</time><span>9 min read</span></div>
+        <h3><a href="/en/posts/scrapy-proxy-middleware.html">A Scrapy Proxy Middleware That Rotates IPs per Request</a></h3>
+        <p>What each downloader-middleware hook is for, why retries keep reusing the dead proxy, and why adding proxies sometimes makes failures go up. Full working code.</p>
+      </article>
+
+      <article class="card">
+        <div class="meta"><span class="k">Troubleshooting</span><time datetime="2026-09-08">2026-09-08</time><span>7 min read</span></div>
+        <h3><a href="/en/posts/proxy-error-troubleshooting.html">Proxy Errors 407, 406, 403 and Timeouts: How to Tell Them Apart</a></h3>
+        <p>These codes come from three different layers. One lookup table plus a per-code playbook, starting with the question that actually matters: who sent this response?</p>
+      </article>
+
+      <article class="card">
+        <div class="meta"><span class="k">Architecture</span><time datetime="2026-08-29">2026-08-29</time><span>11 min read</span></div>
+        <h3><a href="/en/posts/proxy-pool-design.html">Four Design Decisions Behind a Crawler Proxy Pool (with Python)</a></h3>
+        <p>Why you should never extract one IP per request, how to size the low-water mark, whether to trust the server's expiry field, and how much concurrency one IP can take.</p>
+      </article>
+
+      <article class="card">
+        <div class="meta"><span class="k">Fundamentals</span><time datetime="2026-08-18">2026-08-18</time><span>6 min read</span></div>
+        <h3><a href="/en/posts/how-http-proxy-works.html">How an HTTP Proxy Actually Works: A Request's Full Journey</a></h3>
+        <p>Absolute-form URLs versus CONNECT tunnels, why HTTPS needs a handshake first, and when to use IP allowlisting instead of username/password.</p>
+      </article>
+    </section>
+
+    <section class="note">
+      <p><strong>About the code:</strong> every example is packaged as a runnable project covering Python, Node.js, TypeScript, Java, Kotlin, Scala, C#, VB.NET, Go, PHP, Ruby, Perl, Rust, Swift, Dart, C++, Shell and PowerShell — 18 languages in total, each demonstrating the same loop: <em>extract an IP &rarr; fetch through it &rarr; swap IP and retry on failure</em>. It lives in <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">xydaili-proxy-examples</a>.</p>
+    </section>
+
+    <section class="note">
+      <p><strong>Note on the Chinese posts:</strong> there is a full <a href="/" hreflang="zh-CN" lang="zh-CN">Chinese edition</a> of this site with the same articles plus extra details specific to domestic Chinese proxy networks.</p>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh's Notes</strong><br>Backend and data-collection notes I would otherwise forget.</div>
+      <nav class="links" aria-label="Footer navigation">
+        <a href="/en/">Home</a>
+        <a href="/en/about.html">About</a>
+        <a href="/feed.xml">RSS</a>
+        <a href="/sitemap.xml">Sitemap</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="/" hreflang="zh-CN" lang="zh-CN">中文</a>
+      </nav>
+    </div>
+    <p class="disclaimer">Personal technical notes. Measurements come from my own environment and may differ on yours. The proxy service referenced in the examples is <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理 (Xingyue Proxy)</a>, used for demonstration only — not a purchase recommendation.</p>
+    <p class="disclaimer">&copy; 2026 pstoh · Content licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a></p>
+  </div>
+</footer>
+</body>
+</html>

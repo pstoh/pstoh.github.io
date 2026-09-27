@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://pstoh.github.io/</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/en/</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/about.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/about.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/about.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/about.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/en/about.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/about.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/about.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/about.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/posts/crawler-rate-limit.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/crawler-rate-limit.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/crawler-rate-limit.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/crawler-rate-limit.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/en/posts/crawler-rate-limit.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/crawler-rate-limit.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/crawler-rate-limit.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/crawler-rate-limit.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/posts/scrapy-proxy-middleware.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/scrapy-proxy-middleware.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/scrapy-proxy-middleware.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/scrapy-proxy-middleware.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/scrapy-proxy-middleware.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/posts/proxy-error-troubleshooting.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/proxy-error-troubleshooting.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/proxy-error-troubleshooting.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/proxy-error-troubleshooting.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/proxy-error-troubleshooting.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/posts/proxy-pool-design.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/proxy-pool-design.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/proxy-pool-design.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/proxy-pool-design.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/en/posts/proxy-pool-design.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/proxy-pool-design.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/proxy-pool-design.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/proxy-pool-design.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/posts/how-http-proxy-works.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/how-http-proxy-works.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/how-http-proxy-works.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/how-http-proxy-works.html"/>
+  </url>
+  <url>
+    <loc>https://pstoh.github.io/en/posts/how-http-proxy-works.html</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/how-http-proxy-works.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/how-http-proxy-works.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/how-http-proxy-works.html"/>
+  </url>
+</urlset>

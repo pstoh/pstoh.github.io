@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scrapy 代理中间件：每个请求自动换 IP - pstoh 的技术笔记</title>
+<meta name="description" content="Scrapy 下载中间件的两个钩子各管什么、重试为什么没换 IP、为什么加了代理失败请求反而变多。附一份生产可用的代理中间件代码与 settings 配置。">
+<meta name="keywords" content="Scrapy代理中间件,Scrapy换IP,process_request,process_exception,Scrapy代理池">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/posts/scrapy-proxy-middleware.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/scrapy-proxy-middleware.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/scrapy-proxy-middleware.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/scrapy-proxy-middleware.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="pstoh 的技术笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="Scrapy 代理中间件：每个请求自动换 IP">
+<meta property="og:description" content="两个钩子、三个坑，一份能直接用的中间件。">
+<meta property="og:url" content="https://pstoh.github.io/posts/scrapy-proxy-middleware.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta property="article:published_time" content="2026-09-16">
+<meta property="article:section" content="Scrapy">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Scrapy 代理中间件：每个请求自动换 IP">
+<meta name="twitter:description" content="两个钩子、三个坑，一份能直接用的中间件。">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://pstoh.github.io/posts/scrapy-proxy-middleware.html#post",
+      "headline": "Scrapy 代理中间件：每个请求自动换 IP",
+      "description": "Scrapy 下载中间件的两个钩子、重试为什么没换 IP、并发与池子大小的配合。",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-09-16",
+      "dateModified": "2026-09-27",
+      "author": { "@type": "Person", "name": "pstoh", "url": "https://pstoh.github.io/about.html" },
+      "publisher": { "@type": "Person", "name": "pstoh" },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pstoh.github.io/posts/scrapy-proxy-middleware.html" },
+      "keywords": "Scrapy代理中间件, Scrapy换IP, process_exception",
+      "articleSection": "Scrapy"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://pstoh.github.io/" },
+        { "@type": "ListItem", "position": 2, "name": "Scrapy 代理中间件", "item": "https://pstoh.github.io/posts/scrapy-proxy-middleware.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/"><span class="dot">p</span>pstoh 的技术笔记</a>
+    <nav class="site-nav" aria-label="站点导航">
+      <a href="/">首页</a>
+      <a href="/about.html">关于</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>Scrapy 代理中间件
+    </nav>
+
+    <article class="post">
+      <header>
+        <h1>Scrapy 代理中间件：每个请求自动换 IP</h1>
+        <div class="post-meta">
+          <time datetime="2026-09-16">2026-09-16</time>
+          <span>Scrapy</span>
+          <span>约 9 分钟</span>
+          <span>作者 pstoh</span>
+        </div>
+      </header>
+
+      <div class="post-body">
+        <p>给 Scrapy 挂代理最省事的写法是在 <code>start_requests</code> 里逐个设 <code>meta["proxy"]</code>。小任务没问题，但一旦开了并发就会暴露问题：代理不生效你都不知道，重试也换不了 IP。正规做法是写一个下载中间件——它能在请求发出前塞代理，也能在请求失败后换一条再来。</p>
+
+        <h2>中间件里的两个钩子</h2>
+        <p>下载中间件有一组方法，我们只需要关心两个：</p>
+        <ul>
+          <li><code>process_request(request, spider)</code>：请求发出<strong>之前</strong>调用，在这里给 <code>request.meta["proxy"]</code> 赋值；</li>
+          <li><code>process_exception(request, exception, spider)</code>：请求<strong>抛异常之后</strong>调用，在这里换一条新 IP 并把 <code>request</code> 返回，Scrapy 会用它重新调度。</li>
+        </ul>
+        <p>很多人只写了第一个，于是"代理失败之后重试还是那条死 IP"，白白浪费重试次数。</p>
+        <blockquote><p>返回值语义要记牢：<code>process_request</code> 返回 <code>None</code> 表示继续往下走；返回 <code>Request</code> 会替换掉当前请求；返回 <code>Response</code> 则直接短路。写错返回值最典型的后果是请求莫名消失。</p></blockquote>
+
+        <h2>启用顺序（数字越小越先执行）</h2>
+        <p>中间件的数字决定顺序。代理中间件放在重试中间件之后比较合算——让 Scrapy 先自己重试，重试都用尽了再轮到我们换 IP:</p>
+        <pre><code>DOWNLOADER_MIDDLEWARES = {
+    "proxy_middleware.XydailiProxyMiddleware": 543,
+}</code></pre>
+
+        <h2>完整代码</h2>
+        <p>下面这份可以直接用，池子就放在中间件实例里。注意 <code>trust_env = False</code> 那一行——取 IP 的请求必须直连，不然容器里的 <code>HTTP_PROXY</code> 环境变量会把这一跳也代理掉。</p>
+        <pre><code>import time
+
+import requests
+
+API = "http://api.xydaili.net:2022/tools/ip.ashx"
+
+
+class XydailiProxyMiddleware(object):
+    def __init__(self, order, api=API, qty=10, area="", isp="",
+                 pool_size=5, max_age=170):
+        self.order = order
+        self.api = api
+        self.qty = qty
+        self.area = area
+        self.isp = isp
+        self.pool_size = pool_size
+        self.max_age = max_age
+        self._items = []
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        s = crawler.settings
+        order = s.get("XYDAILI_ORDER")
+        if not order:
+            raise ValueError("请在 settings.py 里配置 XYDAILI_ORDER（订单号）")
+        return cls(
+            order=order,
+            qty=s.getint("XYDAILI_QTY", 10),
+            area=s.get("XYDAILI_AREA", ""),
+            isp=s.get("XYDAILI_ISP", ""),
+        )
+
+    def _refill(self):
+        params = {
+            "action": "GetIP",
+            "OrderNumber": self.order,
+            "protocol": 1,
+            "qty": self.qty,
+            "split": "json",
+        }
+        if self.area:
+            params["Area"] = self.area
+        if self.isp:
+            params["Isp"] = self.isp
+
+        session = requests.Session()
+        session.trust_env = False        # 取 IP 必须直连
+        try:
+            data = session.get(self.api, params=params, timeout=10).json()
+        finally:
+            session.close()
+
+        if data.get("status") != 200 or not data.get("data"):
+            return
+        now = time.time()
+        for item in data["data"]:
+            self._items.append(
+                ("http://%s:%s" % (item["ip"], item["port"]), now + self.max_age)
+            )
+
+    def _take(self):
+        now = time.time()
+        self._items = [it for it in self._items if it[1] &gt; now]
+        if len(self._items) &lt; self.pool_size:
+            self._refill()
+        return self._items.pop(0)[0] if self._items else None
+
+    def process_request(self, request, spider):
+        proxy = self._take()
+        if proxy:
+            request.meta["proxy"] = proxy
+        return None
+
+    def process_exception(self, request, exception, spider):
+        """代理不可用时立刻换一条，并把请求重新入队。"""
+        proxy = self._take()
+        if not proxy:
+            return None
+        request.meta["proxy"] = proxy
+        return request</code></pre>
+        <p>对应的 <code>settings.py</code>：</p>
+        <pre><code>XYDAILI_ORDER = "你的订单号"
+XYDAILI_QTY = 10          # 一次批量取多少条，别循环单条提取
+XYDAILI_AREA = ""         # 可选：指定城市，比如 "南京"
+XYDAILI_ISP = ""          # 可选：指定运营商，比如 "电信"
+
+CONCURRENT_REQUESTS = 16  # 并发别一下开太大
+RETRY_TIMES = 2
+DOWNLOAD_TIMEOUT = 15
+
+DOWNLOADER_MIDDLEWARES = {
+    "proxy_middleware.XydailiProxyMiddleware": 543,
+}</code></pre>
+
+        <h2>三个踩过的坑</h2>
+        <h3>1. 重试没换 IP</h3>
+        <p>Scrapy 自带的重试中间件会重新调度请求，但它不会改 <code>meta["proxy"]</code>。所以只靠 <code>RETRY_TIMES</code> 是不够的，必须靠 <code>process_exception</code> 去换。判断有没有生效很简单：看日志里同一个 URL 重试时打印的代理是不是变了。</p>
+
+        <h3>2. 加了代理，失败请求反而变多</h3>
+        <p>大概率是并发和池子大小不匹配。比如 <code>CONCURRENT_REQUESTS = 32</code>，池子一次只取 10 条，结果就是 32 个请求抢 10 条 IP，每条 IP 被压得死死的，目标站一看就是异常流量。我的经验是：<strong>池子大小 ≈ 并发数的 1/3 到 1/2，单条 IP 并发控制在 2~5</strong>。</p>
+
+        <h3>3. 池子空了以后请求没有代理</h3>
+        <p>上面 <code>process_request</code> 里写的是「取不到就跳过」，于是请求会以直连方式发出去——如果目标站封了你的 IP，这批请求会全挂，而且日志上看不出来。线上更稳的做法是取不到时抛 <code>IgnoreRequest</code>，让它明确失败，而不是糊里糊涂直连。</p>
+        <pre><code>from scrapy.exceptions import IgnoreRequest
+
+def process_request(self, request, spider):
+    proxy = self._take()
+    if not proxy:
+        raise IgnoreRequest("代理池为空，跳过 %s" % request.url)
+    request.meta["proxy"] = proxy
+    return None</code></pre>
+
+        <h2>怎么确认代理真的生效了</h2>
+        <p>别靠感觉。第一次跑的时候先抓一个回显 IP 的地址，把返回打出来：</p>
+        <pre><code>import scrapy
+
+class IpCheckSpider(scrapy.Spider):
+    name = "ipcheck"
+    start_urls = ["http://httpbin.org/ip"]
+
+    def parse(self, response):
+        self.logger.info("出口信息: %s", response.text)</code></pre>
+        <p>看到返回的 IP 跟本机公网 IP 不一样，说明中间件生效了。这一步花两分钟，能省掉后面一堆"到底是代理没生效还是目标站反爬"的争论。</p>
+
+        <div class="note">
+          <p><strong>小结：</strong><code>process_request</code> 给代理、<code>process_exception</code> 换代理，两个都要写；并发、池子大小、单 IP 压力三者要一起调，只改一个参数往往没用。</p>
+        </div>
+
+        <p>文件我放在 <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">xydaili-proxy-examples</a> 的 <code>scrapy/</code> 目录下，文件头写了 settings 该怎么配。我用的代理线路是 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，短效 IP 会自动轮换，配合这种中间件用起来比较顺——它一次能批量取多条，正好对上这里的池子设计。</p>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>接着看</h2>
+          <ul>
+            <li><a href="/posts/proxy-pool-design.html">爬虫代理池的四个关键设计（附 Python 实现）</a></li>
+            <li><a href="/posts/proxy-error-troubleshooting.html">代理返回 407、406、403、超时，分别怎么排查</a></li>
+            <li><a href="/posts/crawler-rate-limit.html">采集限速与合规：别把对方站点打挂</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh 的技术笔记</strong><br>记录后端与数据采集里那些不写下来就会忘的事。</div>
+      <nav class="links" aria-label="页脚导航">
+        <a href="/">首页</a>
+        <a href="/about.html">关于</a>
+        <a href="/feed.xml">RSS 订阅</a>
+        <a href="/sitemap.xml">站点地图</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>
+      </nav>
+    </div>
+    <p class="disclaimer">本站是个人技术笔记，文章里的实测数据来自我自己的网络环境，换环境结果可能不同。示例中提到的代理服务为 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，仅作技术演示，不构成购买建议。</p>
+    <p class="disclaimer">© 2026 pstoh · 内容采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a> 许可</p>
+  </div>
+</footer>
+</body>
+</html>

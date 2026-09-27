@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>爬虫代理池的四个关键设计（附 Python 实现）- pstoh 的技术笔记</title>
+<meta name="description" content="从一次被限流的教训说起：为什么不能循环单条提取 IP、低水位补货怎么算、失效 IP 用 expire 还是本地时间剔除、单条 IP 该给多少并发，附可直接运行的 Python 代理池。">
+<meta name="keywords" content="爬虫代理池,代理IP池,IP轮换,Python爬虫,低水位补货,提取频率限制">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/posts/proxy-pool-design.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/proxy-pool-design.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/proxy-pool-design.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/proxy-pool-design.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="pstoh 的技术笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="爬虫代理池的四个关键设计（附 Python 实现）">
+<meta property="og:description" content="批量提取、低水位补货、失效剔除、并发控制，四个坑一次讲完。">
+<meta property="og:url" content="https://pstoh.github.io/posts/proxy-pool-design.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta property="article:published_time" content="2026-08-29">
+<meta property="article:section" content="架构">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="爬虫代理池的四个关键设计（附 Python 实现）">
+<meta name="twitter:description" content="批量提取、低水位补货、失效剔除、并发控制，四个坑一次讲完。">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://pstoh.github.io/posts/proxy-pool-design.html#post",
+      "headline": "爬虫代理池的四个关键设计（附 Python 实现）",
+      "description": "为什么不能循环单条提取 IP、低水位补货怎么算、失效 IP 怎么剔除、单条 IP 该给多少并发。",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-08-29",
+      "dateModified": "2026-09-27",
+      "author": { "@type": "Person", "name": "pstoh", "url": "https://pstoh.github.io/about.html" },
+      "publisher": { "@type": "Person", "name": "pstoh" },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pstoh.github.io/posts/proxy-pool-design.html" },
+      "keywords": "爬虫代理池, IP轮换, Python爬虫, 低水位补货",
+      "articleSection": "架构"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://pstoh.github.io/" },
+        { "@type": "ListItem", "position": 2, "name": "爬虫代理池的四个关键设计", "item": "https://pstoh.github.io/posts/proxy-pool-design.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/"><span class="dot">p</span>pstoh 的技术笔记</a>
+    <nav class="site-nav" aria-label="站点导航">
+      <a href="/">首页</a>
+      <a href="/about.html">关于</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>爬虫代理池的四个关键设计
+    </nav>
+
+    <article class="post">
+      <header>
+        <h1>爬虫代理池的四个关键设计（附 Python 实现）</h1>
+        <div class="post-meta">
+          <time datetime="2026-08-29">2026-08-29</time>
+          <span>架构</span>
+          <span>约 11 分钟</span>
+          <span>作者 pstoh</span>
+        </div>
+      </header>
+
+      <div class="post-body">
+        <p>我第一个采集项目就是这么写崩的：每个请求前调一次提取接口拿一条 IP，用完就丢。任务量上来以后，接口开始返回 <code>status=406 提取频率过快</code>，采集程序整片整片地失败。当天晚上把逻辑改成「批量提取 + 本地池子」，接口调用量直接降了一个数量级，采集成功率也从 70% 多回到 99%。</p>
+        <p>下面这四个点，是我后来在好几个项目里反复验证过的。</p>
+
+        <h2>一、别循环单条提取</h2>
+        <p>提取接口基本都有频率限制，这是合理的——它是给你"取资源"用的，不是给你当每请求一次的中间件。单条提取的另一个问题是延迟长：每个采集请求前面都挂一次 10~25ms 的接口往返，QPS 直接被打下来。</p>
+        <blockquote><p>经验做法：一次取 <strong>10~20 条</strong>放进本地队列，队列见底前再补一批。接口调用频率从"每请求一次"降到"每几十个请求一次"。</p></blockquote>
+
+        <h2>二、低水位补货：什么时候补、补多少</h2>
+        <p>常见写法是两个阈值：</p>
+        <ul>
+          <li><strong>高水位</strong>（比如 30 条）：池子上限，别无限囤，短效 IP 放着也会过期。</li>
+          <li><strong>低水位</strong>（比如 5 条）：低于它就触发补货。</li>
+        </ul>
+        <p>低水位不能设成 1。因为补货本身要走一次网络，如果等到只剩 1 条才补，补货的那几百毫秒里池子是空的，采集线程就会阻塞或者抛异常。低水位的作用就是留出这段缓冲。</p>
+        <p>一个简单的估算：<code>低水位 ≈ 采集并发数 × 2</code>。10 个采集线程，低水位设 20 左右比较稳。</p>
+
+        <h2>三、失效怎么剔除：expire 还是本地计时</h2>
+        <p>短效 IP 的生命周期只有几分钟，剔除不及时就会出现"池子里全是死 IP"。两条路都可用：</p>
+        <table>
+          <thead>
+            <tr><th>方案</th><th>优点</th><th>注意</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>用接口返回的 <code>expire</code></td><td>最准，跟服务端一致</td><td>注意时区，接口给的是本地时间</td></tr>
+            <tr><td>本地按时间戳淘汰</td><td>简单，不依赖字段格式</td><td>要设得比真实有效期短一点</td></tr>
+          </tbody>
+        </table>
+        <p>我一般两个都上，取较小值：<code>expire_ts = min(取回时间 + 本地上限, 服务端 expire)</code>。本地上限设成 170 秒——短效 IP 常见有效期是 3 分钟，留 10 秒余量，免得刚好卡在过期那一秒。</p>
+
+        <h2>四、单条 IP 给多少并发</h2>
+        <p>这是最容易被忽略的一点。很多人以为"挂了代理就能随便并发"，结果目标站按 IP 限速，照样 403。我的经验值：</p>
+        <ul>
+          <li>单条 IP 并发 <strong>2~5</strong>，每秒请求不超过 <strong>3 次</strong>；</li>
+          <li>要更高吞吐，就增加 IP 数量，而不是压榨单条 IP；</li>
+          <li>对同一站点，整体并发最终还是要看对方能承受多少，这一点在<a href="/posts/crawler-rate-limit.html">限速与合规</a>那篇里展开说过。</li>
+        </ul>
+
+        <h2>可直接用的 Python 实现</h2>
+        <p>下面这个池子做了三件事：线程安全取用、低水位自动补货、按 expire 淘汰。</p>
+        <pre><code>import threading
+import time
+
+import requests
+
+API = "http://api.xydaili.net:2022/tools/ip.ashx"
+
+
+class ProxyPool(object):
+    def __init__(self, order, qty=20, low_watermark=5,
+                 area="", isp="", timeout=10, max_age=170):
+        self.order = order
+        self.qty = qty
+        self.low_watermark = low_watermark
+        self.area = area
+        self.isp = isp
+        self.timeout = timeout
+        self.max_age = max_age
+
+        self._items = []          # [(proxy_url, expire_ts)]
+        self._lock = threading.Lock()
+
+    def _fetch(self):
+        params = {
+            "action": "GetIP",
+            "OrderNumber": self.order,
+            "protocol": 1,
+            "qty": self.qty,
+            "split": "json",
+        }
+        if self.area:
+            params["Area"] = self.area
+        if self.isp:
+            params["Isp"] = self.isp
+
+        # 取 IP 必须直连：trust_env=False 让它忽略环境变量里的 http_proxy
+        session = requests.Session()
+        session.trust_env = False
+        try:
+            resp = session.get(API, params=params, timeout=self.timeout)
+        finally:
+            session.close()
+
+        data = resp.json()
+        if data.get("status") != 200 or not data.get("data"):
+            raise RuntimeError("提取失败: %s" % data.get("msg"))
+
+        now = time.time()
+        fresh = []
+        for item in data["data"]:
+            proxy_url = "http://%s:%s" % (item["ip"], item["port"])
+            expire_ts = now + self.max_age
+            try:  # 接口返回形如 2026-09-27 10:26:31，能解析就用它，更准
+                text = str(item["expire"])[:19].replace("T", " ")
+                expire_ts = min(expire_ts, time.mktime(
+                    time.strptime(text, "%Y-%m-%d %H:%M:%S")))
+            except Exception:
+                pass
+            fresh.append((proxy_url, expire_ts))
+        return fresh
+
+    def get(self):
+        """取一条可用代理；池子见底时自动补货。"""
+        with self._lock:
+            now = time.time()
+            self._items = [it for it in self._items if it[1] &gt; now]
+            if len(self._items) &lt; self.low_watermark:
+                self._items.extend(self._fetch())
+            return self._items.pop(0)[0]
+
+    @property
+    def size(self):
+        with self._lock:
+            now = time.time()
+            return len([1 for _, exp in self._items if exp &gt; now])</code></pre>
+        <p>用法很直白：</p>
+        <pre><code>pool = ProxyPool(order="你的订单号", qty=20, low_watermark=5)
+
+for url in urls:
+    proxy = pool.get()
+    try:
+        r = requests.get(url, proxies={"http": proxy, "https": proxy}, timeout=10)
+    except requests.RequestException as exc:
+        # 短效 IP 失效很正常，换下一条继续，别让一次超时打断整批任务
+        print("换 IP:", exc.__class__.__name__)</code></pre>
+
+        <h2>几个容易忽略的细节</h2>
+        <ul>
+          <li><strong>取 IP 的请求别走代理。</strong>这一条踩过的人最多，容器里配了 <code>HTTP_PROXY</code> 环境变量，取 IP 也走代理，代理一挂整条链路就死了。</li>
+          <li><strong>补货失败不要空转重试。</strong>接口报错（订单过期、频率快）时死循环重试只会让情况更糟，记日志 + 退避更靠谱。</li>
+          <li><strong>把用量记下来。</strong>接口返回里的已用量字段建议打到监控里，不然跑着跑着额度用完了才发现。</li>
+          <li><strong>多进程要共享池子。</strong>上面这个类只在线程内有效，多进程场景得把队列挪到 Redis 里。</li>
+        </ul>
+
+        <div class="note">
+          <p><strong>小结：</strong>批量提取（10~20 条/次）、低水位设为并发的 2 倍、按 expire 提前淘汰、单 IP 并发压到 5 以内。这四条做到，采集稳定性会有肉眼可见的提升。</p>
+        </div>
+
+        <p>代码我整理成了可直接运行的版本，除了 Python 还覆盖 Go、Node.js、Java、C# 等 18 种语言，都放在 <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">xydaili-proxy-examples</a> 里。我用的线路来自 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，覆盖 300 多个城市、短效 IP 自动轮换，白名单和账号密码两种模式都支持，上面这些参数就是按它的接口字段写的。</p>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>接着看</h2>
+          <ul>
+            <li><a href="/posts/scrapy-proxy-middleware.html">Scrapy 代理中间件：每个请求自动换 IP</a></li>
+            <li><a href="/posts/proxy-error-troubleshooting.html">代理返回 407、406、403、超时，分别怎么排查</a></li>
+            <li><a href="/posts/crawler-rate-limit.html">采集限速与合规：别把对方站点打挂</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh 的技术笔记</strong><br>记录后端与数据采集里那些不写下来就会忘的事。</div>
+      <nav class="links" aria-label="页脚导航">
+        <a href="/">首页</a>
+        <a href="/about.html">关于</a>
+        <a href="/feed.xml">RSS 订阅</a>
+        <a href="/sitemap.xml">站点地图</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>
+      </nav>
+    </div>
+    <p class="disclaimer">本站是个人技术笔记，文章里的实测数据来自我自己的网络环境，换环境结果可能不同。示例中提到的代理服务为 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，仅作技术演示，不构成购买建议。</p>
+    <p class="disclaimer">© 2026 pstoh · 内容采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a> 许可</p>
+  </div>
+</footer>
+</body>
+</html>

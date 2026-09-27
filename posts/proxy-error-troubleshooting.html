@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>代理返回 407、406、403、超时，分别怎么排查 - pstoh 的技术笔记</title>
+<meta name="description" content="407 是代理层要账号密码，406 是提取太频繁，403 多半是白名单或目标站反爬，502/504 是节点问题。附一张排查表和逐条处置方式，含提取接口的防刷设计说明。">
+<meta name="keywords" content="代理407,代理406,代理超时排查,Proxy Authentication Required,白名单403,代理连接失败">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/posts/proxy-error-troubleshooting.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/proxy-error-troubleshooting.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/proxy-error-troubleshooting.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="pstoh 的技术笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="代理返回 407、406、403、超时，分别怎么排查">
+<meta property="og:description" content="一张排查表 + 逐条处置方式，先分清错误是谁返回的。">
+<meta property="og:url" content="https://pstoh.github.io/posts/proxy-error-troubleshooting.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta property="article:published_time" content="2026-09-08">
+<meta property="article:section" content="排错">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="代理返回 407、406、403、超时，分别怎么排查">
+<meta name="twitter:description" content="一张排查表 + 逐条处置方式，先分清错误是谁返回的。">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://pstoh.github.io/posts/proxy-error-troubleshooting.html#post",
+      "headline": "代理返回 407、406、403、超时，分别怎么排查",
+      "description": "407、406、403、502/504 与超时的区别，以及各自的处置方式。",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-09-08",
+      "dateModified": "2026-09-27",
+      "author": { "@type": "Person", "name": "pstoh", "url": "https://pstoh.github.io/about.html" },
+      "publisher": { "@type": "Person", "name": "pstoh" },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pstoh.github.io/posts/proxy-error-troubleshooting.html" },
+      "keywords": "代理407, 代理406, 代理超时, 白名单403",
+      "articleSection": "排错"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://pstoh.github.io/" },
+        { "@type": "ListItem", "position": 2, "name": "代理错误码排查", "item": "https://pstoh.github.io/posts/proxy-error-troubleshooting.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/"><span class="dot">p</span>pstoh 的技术笔记</a>
+    <nav class="site-nav" aria-label="站点导航">
+      <a href="/">首页</a>
+      <a href="/about.html">关于</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>代理错误码排查
+    </nav>
+
+    <article class="post">
+      <header>
+        <h1>代理返回 407、406、403、超时，分别怎么排查</h1>
+        <div class="post-meta">
+          <time datetime="2026-09-08">2026-09-08</time>
+          <span>排错</span>
+          <span>约 7 分钟</span>
+          <span>作者 pstoh</span>
+        </div>
+      </header>
+
+      <div class="post-body">
+        <p>采集出问题的时候，最费时间的不是改代码，而是判断错误到底出在哪一层。同样一个 403，可能是白名单没生效，也可能是目标站把你拦了，处理方式完全相反。这篇整理了我在实际项目里遇到过的几类错误，以及对应的排查顺序。</p>
+
+        <h2>第一步：先分清错误是谁返回的</h2>
+        <p>这是最关键的一步。同一个数字，来源不同含义就不同：</p>
+        <ul>
+          <li><strong>代理层返回</strong>：407、502、504，以及提取接口自己的 status 字段；</li>
+          <li><strong>目标站返回</strong>：403、404、429、503；</li>
+          <li><strong>本机网络层</strong>：连接超时、连接被重置、DNS 解析失败。</li>
+        </ul>
+        <p>怎么分？看响应体和响应头。代理层返回的错误通常是它自己拼的一小段 HTML 或纯文本，没有目标站的 <code>Server</code>、<code>Set-Cookie</code> 这些头。把响应体前 200 个字符打出来看一眼，心里就有数了。</p>
+
+        <h2>逐条对照表</h2>
+        <table>
+          <thead>
+            <tr><th>现象</th><th>含义</th><th>怎么处理</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>407</strong></td><td>代理层要账号密码</td><td>这条线路和你的认证方式不匹配，换一条 IP 重试</td></tr>
+            <tr><td><strong>406</strong>（提取接口 status）</td><td>提取太频繁</td><td>改成批量提取，单次 10~20 条</td></tr>
+            <tr><td><strong>403</strong></td><td>白名单未生效，或目标站反爬</td><td>先验证出口 IP，再判断是不是目标站</td></tr>
+            <tr><td><strong>502 / 504</strong></td><td>代理节点到目标站这一段出问题</td><td>换 IP；持续出现就换个目标域名试试</td></tr>
+            <tr><td>连接超时</td><td>代理端口连不上，或目标站不可达</td><td>换 IP + 缩短超时时间</td></tr>
+            <tr><td>连接被重置</td><td>中间设备掐断，或目标站主动断开</td><td>降并发、加请求头、换 IP</td></tr>
+          </tbody>
+        </table>
+
+        <h2>407：代理层说"你得先证明自己有权限"</h2>
+        <p>407 的全名是 <em>Proxy Authentication Required</em>，它是代理发的，不是你访问的网站发的。两种情况会撞上：</p>
+        <ol>
+          <li>你用的是白名单模式，但这条线路要求账号密码——反之也一样；</li>
+          <li>账号密码写错了，或者密码里有 <code>@</code>、<code>:</code> 这类字符没做 URL 编码。</li>
+        </ol>
+        <p>处理起来很简单：<strong>当成失败，换一条 IP 重试</strong>。我在示例代码里都是这么写的，因为同一批提取出来的线路偶尔会混进需要认证的节点，重试一次基本就好了。</p>
+        <pre><code>code, body = request_via_proxy(target, proxy)
+if code == 407:
+    # 这条线路要账号密码，换一条重试
+    raise RuntimeError("%s 返回 407" % proxy)</code></pre>
+
+        <h2>406：提取接口在提醒你"手太快了"</h2>
+        <p>提取接口通常会在响应体里带一个自己的状态码，比如 <code>{"status":406,"msg":"提取频率过快"}</code>。这不是网络故障，纯粹是你调用太密了。改成批量提取之后就不用管它了，具体做法在<a href="/posts/proxy-pool-design.html">代理池设计</a>那篇里写过。</p>
+        <div class="note">
+          <p><strong>顺便说个设计细节：</strong>有些接口在订单过期、参数错误这类无效请求上会故意延迟十几秒才返回，同时临时限制来源 IP。这不是接口坏了，而是防刷设计——防止客户端拿错参数疯狂重试把服务器打满。所以你的代码里遇到这类错误，正确做法是记日志 + 退出，而不是立刻重试。</p>
+        </div>
+
+        <h2>403：先确认出口 IP 到底是谁</h2>
+        <p>403 是最需要分情况的一个。我的排查顺序是：</p>
+        <ol>
+          <li>用一个回显 IP 的地址（比如 <code>http://httpbin.org/ip</code>）走代理访问一次，看返回的是不是代理的出口 IP；</li>
+          <li>如果回显的还是你本机 IP，说明代理压根没生效——检查 <code>proxies</code> 参数、环境变量、以及取 IP 的请求是不是被误配了代理；</li>
+          <li>如果回显是代理 IP 但仍然 403，就看响应体：代理层提示一般是"IP 不在白名单"这类文案，目标站的 403 则会带自己的页面和头部。</li>
+        </ol>
+        <p>还有一种情况是目标站对 UA、Referer、Cookie 有校验。这种就不是代理的问题了，得回去补请求头。</p>
+
+        <h2>超时类：区分"连不上"和"连上了没响应"</h2>
+        <p>这两者在代码里的表现不同，处理方式也不同：</p>
+        <ul>
+          <li><strong>连接超时</strong>（connect timeout）：TCP 都没握上手，代理 IP 大概率已经失效，换 IP；</li>
+          <li><strong>读取超时</strong>（read timeout）：连上了但对方不吐数据，可能是目标站慢，也可能是这条线路的质量差。</li>
+        </ul>
+        <p>建议把两类超时分开设置，并且都设短一点：连接 5~10 秒，读取 10~15 秒。采集场景下，等 60 秒的收益远不如直接换一条 IP 重来。</p>
+        <pre><code>r = requests.get(url,
+                 proxies={"http": proxy, "https": proxy},
+                 timeout=(6, 12))   # (连接超时, 读取超时)</code></pre>
+
+        <h2>一张收尾检查清单</h2>
+        <ul>
+          <li>取 IP 的请求是不是直连的？（容器里有没有 <code>HTTP_PROXY</code> 环境变量）</li>
+          <li>失败重试时有没有真的换 IP？很多重试框架默认复用同一个代理，那是白重试。</li>
+          <li>单 IP 并发是不是压太高了？先降到 2~5 试试。</li>
+          <li>超时是不是设太长？长超时会让任务队列堆积，看起来像"卡死"。</li>
+          <li>有没有把代理层的错误码和目标站的错误码分开统计？混在一起没法定位。</li>
+        </ul>
+
+        <p>我用的线路是 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，它的接口在错误信息上给得比较直白（会直接告诉你"IP 不在白名单列表"以及还剩多少秒），排查时省了不少事。即然要做采集，把这几类错误分开埋点，后面看监控就能一眼看出是线路问题还是目标站问题。</p>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>接着看</h2>
+          <ul>
+            <li><a href="/posts/how-http-proxy-works.html">HTTP 代理到底怎么工作：一次请求的完整旅程</a></li>
+            <li><a href="/posts/proxy-pool-design.html">爬虫代理池的四个关键设计（附 Python 实现）</a></li>
+            <li><a href="/posts/crawler-rate-limit.html">采集限速与合规：别把对方站点打挂</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh 的技术笔记</strong><br>记录后端与数据采集里那些不写下来就会忘的事。</div>
+      <nav class="links" aria-label="页脚导航">
+        <a href="/">首页</a>
+        <a href="/about.html">关于</a>
+        <a href="/feed.xml">RSS 订阅</a>
+        <a href="/sitemap.xml">站点地图</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>
+      </nav>
+    </div>
+    <p class="disclaimer">本站是个人技术笔记，文章里的实测数据来自我自己的网络环境，换环境结果可能不同。示例中提到的代理服务为 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，仅作技术演示，不构成购买建议。</p>
+    <p class="disclaimer">© 2026 pstoh · 内容采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a> 许可</p>
+  </div>
+</footer>
+</body>
+</html>

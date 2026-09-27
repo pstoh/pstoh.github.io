@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About - pstoh's Notes</title>
+<meta name="description" content="pstoh, a backend and data-collection engineer. Notes on scraping, HTTP proxies, rate limiting and reliability, plus runnable proxy examples in 18 programming languages.">
+<meta name="keywords" content="pstoh,web scraping,data collection,backend,http proxy">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://pstoh.github.io/en/about.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/about.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/about.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/about.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="pstoh's Notes">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="About - pstoh's Notes">
+<meta property="og:description" content="Backend and data-collection engineer. Notes on scraping, proxies and reliability.">
+<meta property="og:url" content="https://pstoh.github.io/en/about.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="About - pstoh's Notes">
+<meta name="twitter:description" content="Backend and data-collection engineer.">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "AboutPage",
+      "@id": "https://pstoh.github.io/en/about.html#page",
+      "url": "https://pstoh.github.io/en/about.html",
+      "name": "About",
+      "inLanguage": "en",
+      "mainEntity": { "@id": "https://pstoh.github.io/#author" }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://pstoh.github.io/#author",
+      "name": "pstoh",
+      "url": "https://pstoh.github.io/en/about.html",
+      "jobTitle": "Backend / Data Collection Engineer",
+      "knowsAbout": ["Web Scraping", "HTTP Proxies", "Data Collection", "Rate Limiting", "Python", "Go", "Node.js"],
+      "sameAs": ["https://github.com/pstoh"]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/en/"><span class="dot">p</span>pstoh's Notes</a>
+    <nav class="site-nav" aria-label="Site navigation">
+      <a href="/en/">Home</a>
+      <a href="/en/about.html" aria-current="page">About</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+      <a href="/about.html" hreflang="zh-CN" lang="zh-CN">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/en/">Home</a><span>/</span>About
+    </nav>
+
+    <article class="post">
+      <div class="profile">
+        <div class="avatar" aria-hidden="true">p</div>
+        <div class="who">
+          <h1>pstoh</h1>
+          <p>Backend / data collection engineer · proxy networks and crawler reliability</p>
+        </div>
+      </div>
+
+      <div class="post-body">
+        <p>I write this site for a simple reason: most material about scraping stops at "install the library". What actually blocks people is the second week — the job that worked yesterday and fails today. These notes are the debugging paths I wish I had found back then.</p>
+
+        <h2>What I write about</h2>
+        <ul>
+          <li><strong>The proxy layer</strong> — how HTTP proxies forward and authenticate requests, pool design, rotation strategy;</li>
+          <li><strong>Engineering</strong> — Scrapy middleware, rate limiting and backoff, retry policy, failure metrics;</li>
+          <li><strong>Post-mortems</strong> — the order in which to check things when an error appears, including the cases that look like network problems but are not.</li>
+        </ul>
+
+        <h2>Where the code lives</h2>
+        <p>Every example in the posts is packaged as a runnable project covering Python, Node.js, TypeScript, Java, Kotlin, Scala, C#, VB.NET, Go, PHP, Ruby, Perl, Rust, Swift, Dart, C++, Shell and PowerShell — 18 languages, each showing the same loop: <em>extract an IP, fetch through it, swap and retry on failure</em>.</p>
+        <p>&#128073; <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">github.com/pstoh/xydaili-proxy-examples</a></p>
+
+        <h2>About the proxy service</h2>
+        <p>The examples use domestic Chinese HTTP proxy IPs from <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理 (Xingyue Proxy)</a> — 300+ cities, short-lived IPs rotated automatically, extraction via API, plus an IP allowlist mode. The measurements in the posts come from its lines. To be clear: this is a technical demonstration, not a purchase recommendation — evaluate any provider against your own workload.</p>
+
+        <h2>Get in touch</h2>
+        <ul>
+          <li>GitHub: <a href="https://github.com/pstoh" rel="me noopener" target="_blank">github.com/pstoh</a></li>
+          <li>Bug reports and corrections: open an issue on the repository — easier to track than email</li>
+        </ul>
+
+        <h2>License</h2>
+        <p>Posts are licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a>; please link back if you republish. Code samples are free to use commercially, no attribution needed.</p>
+
+        <div class="note">
+          <p><strong>The short version:</strong> proxies are one link in the chain. What decides whether a crawler survives for months is rate limiting, retries, caching and monitoring — those matter far more than how big your IP pool is.</p>
+        </div>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>Start here</h2>
+          <ul>
+            <li><a href="/en/posts/how-http-proxy-works.html">How an HTTP Proxy Actually Works: A Request's Full Journey</a></li>
+            <li><a href="/en/posts/proxy-error-troubleshooting.html">Proxy Errors 407, 406, 403 and Timeouts: How to Tell Them Apart</a></li>
+            <li><a href="/en/posts/crawler-rate-limit.html">Rate Limiting and Etiquette: Don't Take Down Someone's Site</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh's Notes</strong><br>Backend and data-collection notes I would otherwise forget.</div>
+      <nav class="links" aria-label="Footer navigation">
+        <a href="/en/">Home</a>
+        <a href="/en/about.html">About</a>
+        <a href="/feed.xml">RSS</a>
+        <a href="/sitemap.xml">Sitemap</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="/" hreflang="zh-CN" lang="zh-CN">中文</a>
+      </nav>
+    </div>
+    <p class="disclaimer">Personal technical notes. Measurements come from my own environment and may differ on yours. The proxy service referenced in the examples is <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理 (Xingyue Proxy)</a>, used for demonstration only — not a purchase recommendation.</p>
+    <p class="disclaimer">&copy; 2026 pstoh · Content licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a></p>
+  </div>
+</footer>
+</body>
+</html>

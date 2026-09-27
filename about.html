@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>关于我 - pstoh 的技术笔记</title>
+<meta name="description" content="pstoh，后端与数据采集方向的开发者。这里记录爬虫、代理IP、限速与稳定性相关的实践笔记，以及 18 种语言的代理接入示例代码。">
+<meta name="keywords" content="pstoh,数据采集,爬虫,后端开发,代理IP">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://pstoh.github.io/about.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/about.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/about.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/about.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="pstoh 的技术笔记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="关于我 - pstoh 的技术笔记">
+<meta property="og:description" content="后端与数据采集方向的开发者，记录爬虫、代理IP 与稳定性实践。">
+<meta property="og:url" content="https://pstoh.github.io/about.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="关于我 - pstoh 的技术笔记">
+<meta name="twitter:description" content="后端与数据采集方向的开发者。">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "AboutPage",
+      "@id": "https://pstoh.github.io/about.html#page",
+      "url": "https://pstoh.github.io/about.html",
+      "name": "关于我",
+      "inLanguage": "zh-CN",
+      "mainEntity": { "@id": "https://pstoh.github.io/#author" }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://pstoh.github.io/#author",
+      "name": "pstoh",
+      "url": "https://pstoh.github.io/about.html",
+      "jobTitle": "后端 / 数据采集开发",
+      "knowsAbout": ["爬虫", "HTTP 代理", "数据采集", "限速与稳定性", "Python", "Go", "Node.js"],
+      "sameAs": ["https://github.com/pstoh"]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/"><span class="dot">p</span>pstoh 的技术笔记</a>
+    <nav class="site-nav" aria-label="站点导航">
+      <a href="/">首页</a>
+      <a href="/about.html" aria-current="page">关于</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="/">首页</a><span>/</span>关于
+    </nav>
+
+    <article class="post">
+      <div class="profile">
+        <div class="avatar" aria-hidden="true">p</div>
+        <div class="who">
+          <h1>pstoh</h1>
+          <p>后端 / 数据采集开发 · 关注代理网络与采集链路的稳定性</p>
+        </div>
+      </div>
+
+      <div class="post-body">
+        <p>写这个站的原因很朴素：采集相关的坑，查资料时能搜到的东西大多停在"怎么装库"这一层，真正让人卡住的是"为什么昨天能跑今天不行"。我把这些年踩过的坑整理成文，既是备忘，也希望能让后来的人少绕一点路。</p>
+
+        <h2>我在写什么</h2>
+        <ul>
+          <li><strong>代理这一层</strong>：HTTP 代理的转发与认证原理、代理池设计、IP 轮换策略；</li>
+          <li><strong>工程实践</strong>：Scrapy 中间件、限速与退避、失败重试与监控埋点；</li>
+          <li><strong>踩坑记录</strong>：各种错误码的排查顺序，以及那些"看起来像网络问题其实不是"的案例。</li>
+        </ul>
+
+        <h2>代码放在哪</h2>
+        <p>文章里的示例我都整理成了可直接运行的项目，覆盖 Python、Node.js、TypeScript、Java、Kotlin、Scala、C#、VB.NET、Go、PHP、Ruby、Perl、Rust、Swift、Dart、C++、Shell、PowerShell 共 18 种语言，每种都演示「提取 IP → 走代理访问目标站 → 失败换 IP 重试」这条完整链路：</p>
+        <p>👉 <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">github.com/pstoh/xydaili-proxy-examples</a></p>
+
+        <h2>关于代理服务</h2>
+        <p>我在项目里用的是 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a> 的国内 HTTP 代理 IP，覆盖 300 多个城市、短效 IP 自动轮换，会员中心可以拿订单号走 API 实时提取，也支持 IP 白名单模式。文章里的实测数据都是拿它的线路跑的。<strong>需要说明的是</strong>：这里写的是技术用法和排错思路，不构成购买建议，选服务还是按自己的业务场景评估。</p>
+
+        <h2>联系方式</h2>
+        <ul>
+          <li>GitHub：<a href="https://github.com/pstoh" rel="me noopener" target="_blank">github.com/pstoh</a></li>
+          <li>问题反馈：欢迎直接在仓库里开 Issue，比邮件更容易跟进</li>
+        </ul>
+
+        <h2>关于版权</h2>
+        <p>本站内容采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a> 许可，转载请注明出处并保留原文链接。站内代码示例可自由用于商业项目，无需署名。</p>
+
+        <div class="note">
+          <p><strong>一句话说明白：</strong>代理只是采集链路里的一环，真正决定项目能不能长期跑下去的，是限速、重试、缓存和监控这几件事——它们比"IP 池有多大"重要得多。</p>
+        </div>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>从这里开始读</h2>
+          <ul>
+            <li><a href="/posts/how-http-proxy-works.html">HTTP 代理到底怎么工作：一次请求的完整旅程</a></li>
+            <li><a href="/posts/proxy-error-troubleshooting.html">代理返回 407、406、403、超时，分别怎么排查</a></li>
+            <li><a href="/posts/crawler-rate-limit.html">采集限速与合规：别把对方站点打挂</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh 的技术笔记</strong><br>记录后端与数据采集里那些不写下来就会忘的事。</div>
+      <nav class="links" aria-label="页脚导航">
+        <a href="/">首页</a>
+        <a href="/about.html">关于</a>
+        <a href="/feed.xml">RSS 订阅</a>
+        <a href="/sitemap.xml">站点地图</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>
+      </nav>
+    </div>
+    <p class="disclaimer">本站是个人技术笔记，文章里的实测数据来自我自己的网络环境，换环境结果可能不同。示例中提到的代理服务为 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，仅作技术演示，不构成购买建议。</p>
+    <p class="disclaimer">© 2026 pstoh · 内容采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a> 许可</p>
+  </div>
+</footer>
+</body>
+</html>

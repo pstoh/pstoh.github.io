@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proxy Errors 407, 406, 403 and Timeouts: How to Tell Them Apart - pstoh's Notes</title>
+<meta name="description" content="A 407 comes from the proxy, a 406 means you extracted too often, a 403 is usually an allowlist mismatch or the target's anti-bot layer, and 502/504 are node problems. Lookup table plus a per-code playbook.">
+<meta name="keywords" content="proxy 407,proxy 406,proxy timeout troubleshooting,Proxy Authentication Required,403 allowlist,proxy 502 504">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/proxy-error-troubleshooting.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/proxy-error-troubleshooting.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="pstoh's Notes">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Proxy Errors 407, 406, 403 and Timeouts: How to Tell Them Apart">
+<meta property="og:description" content="A lookup table plus a per-code playbook, starting with who sent the response.">
+<meta property="og:url" content="https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta property="article:published_time" content="2026-09-08">
+<meta property="article:section" content="Troubleshooting">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Proxy Errors 407, 406, 403 and Timeouts">
+<meta name="twitter:description" content="A lookup table plus a per-code playbook, starting with who sent the response.">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html#post",
+      "headline": "Proxy Errors 407, 406, 403 and Timeouts: How to Tell Them Apart",
+      "description": "How to tell proxy-layer errors from target-site errors, with a playbook for each code.",
+      "inLanguage": "en",
+      "datePublished": "2026-09-08",
+      "dateModified": "2026-09-27",
+      "author": { "@type": "Person", "name": "pstoh", "url": "https://pstoh.github.io/en/about.html" },
+      "publisher": { "@type": "Person", "name": "pstoh" },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html" },
+      "keywords": "proxy 407, proxy 406, proxy timeout, 403 allowlist",
+      "articleSection": "Troubleshooting"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://pstoh.github.io/en/" },
+        { "@type": "ListItem", "position": 2, "name": "Proxy Errors 407, 406, 403 and Timeouts", "item": "https://pstoh.github.io/en/posts/proxy-error-troubleshooting.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/en/"><span class="dot">p</span>pstoh's Notes</a>
+    <nav class="site-nav" aria-label="Site navigation">
+      <a href="/en/">Home</a>
+      <a href="/en/about.html">About</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+      <a href="/posts/proxy-error-troubleshooting.html" hreflang="zh-CN" lang="zh-CN">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/en/">Home</a><span>/</span>Proxy Errors 407, 406, 403 and Timeouts
+    </nav>
+
+    <article class="post">
+      <header>
+        <h1>Proxy Errors 407, 406, 403 and Timeouts: How to Tell Them Apart</h1>
+        <div class="post-meta">
+          <time datetime="2026-09-08">2026-09-08</time>
+          <span>Troubleshooting</span>
+          <span>7 min read</span>
+          <span>by pstoh</span>
+        </div>
+      </header>
+
+      <div class="post-body">
+        <p>The expensive part of debugging a crawler is not changing code, it is working out which layer failed. The same 403 can mean "your IP is not on the allowlist" or "the site blocked you", and the correct reaction is opposite in each case. Here is the order I check things in.</p>
+
+        <h2>Step one: who sent this response?</h2>
+        <ul>
+          <li><strong>Proxy layer</strong>: 407, 502, 504, plus the status field of the extraction API itself;</li>
+          <li><strong>Target site</strong>: 403, 404, 429, 503;</li>
+          <li><strong>Local network</strong>: connect timeouts, connection resets, DNS failures.</li>
+        </ul>
+        <p>How to tell them apart: look at the body and headers. Proxy-generated errors are usually a short self-contained HTML or plain-text page with none of the origin's <code>Server</code> or <code>Set-Cookie</code> headers. Print the first 200 characters of the response and it is usually obvious.</p>
+
+        <h2>Lookup table</h2>
+        <table>
+          <thead>
+            <tr><th>Symptom</th><th>Meaning</th><th>What to do</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>407</strong></td><td>The proxy wants credentials</td><td>That line does not match your auth mode — swap IP and retry</td></tr>
+            <tr><td><strong>406</strong> (from the API)</td><td>Extracting too often</td><td>Batch it: 10–20 IPs per call</td></tr>
+            <tr><td><strong>403</strong></td><td>Allowlist mismatch, or the target blocked you</td><td>Verify the egress IP first, then decide</td></tr>
+            <tr><td><strong>502 / 504</strong></td><td>Proxy node cannot reach the origin</td><td>Swap IP; if it persists, test another domain</td></tr>
+            <tr><td>Connect timeout</td><td>Cannot even reach the proxy port</td><td>Swap IP, and shorten the timeout</td></tr>
+            <tr><td>Connection reset</td><td>Middlebox or origin closed it</td><td>Lower concurrency, add headers, swap IP</td></tr>
+          </tbody>
+        </table>
+
+        <h2>407: the proxy wants proof</h2>
+        <p>407 is <em>Proxy Authentication Required</em>. It comes from the proxy, never from the site you were fetching. Two causes:</p>
+        <ol>
+          <li>You are using allowlist mode but the line expects username/password (or the reverse);</li>
+          <li>The credentials are wrong, or a password containing <code>@</code> or <code>:</code> was not URL-encoded.</li>
+        </ol>
+        <p>Treat it as a failure and rotate. In my examples that is exactly what happens, because batches occasionally contain a line that needs credentials.</p>
+        <pre><code>code, body = request_via_proxy(target, proxy)
+if code == 407:
+    # this line wants credentials — swap it
+    raise RuntimeError("%s returned 407" % proxy)</code></pre>
+
+        <h2>406: the extraction API telling you to slow down</h2>
+        <p>Extraction endpoints usually carry their own status field, e.g. <code>{"status":406,"msg":"too many requests"}</code>. This is not a network fault — you are simply calling too often. Batching fixes it; see <a href="/en/posts/proxy-pool-design.html">the pool design post</a>.</p>
+        <div class="note">
+          <p><strong>One design detail worth knowing:</strong> some APIs deliberately delay responses to invalid requests — an expired order or a bad parameter can take ten-odd seconds to come back, with a temporary block on the source IP. That is anti-abuse, not a broken endpoint. The right reaction in your client is to log and stop, never to retry in a loop.</p>
+        </div>
+
+        <h2>403: check the egress IP before blaming the site</h2>
+        <ol>
+          <li>Fetch an IP echo endpoint (for example <code>http://httpbin.org/ip</code>) through the proxy and see what it reports;</li>
+          <li>If it echoes your own address, the proxy never applied — check the <code>proxies</code> argument, environment variables, and whether the extraction call was accidentally routed through a proxy too;</li>
+          <li>If it shows the proxy IP and you still get 403, read the body: allowlist errors are usually explicit text from the provider, whereas an origin 403 carries the site's own page and headers.</li>
+        </ol>
+        <p>The remaining case is origin-side filtering on User-Agent, Referer or cookies. That is not a proxy problem, and no amount of IP rotation will fix it.</p>
+
+        <h2>Timeouts: separate "cannot connect" from "connected but silent"</h2>
+        <ul>
+          <li><strong>Connect timeout</strong>: the TCP handshake never completed — the IP is almost certainly dead. Rotate.</li>
+          <li><strong>Read timeout</strong>: connected, but the remote is not sending data. Could be a slow origin or a poor line.</li>
+        </ul>
+        <p>Configure both, and keep them short. In a crawler, waiting 60 seconds is almost never better than rotating and retrying.</p>
+        <pre><code>r = requests.get(url,
+                 proxies={"http": proxy, "https": proxy},
+                 timeout=(6, 12))   # (connect timeout, read timeout)</code></pre>
+
+        <h2>Closing checklist</h2>
+        <ul>
+          <li>Is the extraction request going direct? (Any <code>HTTP_PROXY</code> in the environment?)</li>
+          <li>Does your retry logic actually rotate the IP? Many retry frameworks reuse the same proxy — that is not a retry.</li>
+          <li>Is per-IP concurrency too high? Drop to 2–5 and compare.</li>
+          <li>Are timeouts so long that the queue looks hung?</li>
+          <li>Do you count proxy-layer errors separately from origin errors? Mixing them makes both invisible.</li>
+        </ul>
+
+        <p>The lines I use come from <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>, whose error messages are refreshingly explicit — it will tell you the IP is not on the allowlist, and how many seconds until the next attempt is allowed. Whatever provider you use, split these error classes in your metrics; the next incident will diagnose itself.</p>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>Read next</h2>
+          <ul>
+            <li><a href="/en/posts/how-http-proxy-works.html">How an HTTP Proxy Actually Works: A Request's Full Journey</a></li>
+            <li><a href="/en/posts/proxy-pool-design.html">Four Design Decisions Behind a Crawler Proxy Pool (with Python)</a></li>
+            <li><a href="/en/posts/crawler-rate-limit.html">Rate Limiting and Etiquette: Don't Take Down Someone's Site</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh's Notes</strong><br>Backend and data-collection notes I would otherwise forget.</div>
+      <nav class="links" aria-label="Footer navigation">
+        <a href="/en/">Home</a>
+        <a href="/en/about.html">About</a>
+        <a href="/feed.xml">RSS</a>
+        <a href="/sitemap.xml">Sitemap</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="/" hreflang="zh-CN" lang="zh-CN">中文</a>
+      </nav>
+    </div>
+    <p class="disclaimer">Personal technical notes. Measurements come from my own environment and may differ on yours. The proxy service referenced in the examples is <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理 (Xingyue Proxy)</a>, used for demonstration only — not a purchase recommendation.</p>
+    <p class="disclaimer">&copy; 2026 pstoh · Content licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a></p>
+  </div>
+</footer>
+</body>
+</html>

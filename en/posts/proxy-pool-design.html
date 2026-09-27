@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Four Design Decisions Behind a Crawler Proxy Pool (with Python) - pstoh's Notes</title>
+<meta name="description" content="Why one-IP-per-request extraction breaks under load, how to size the low-water mark, whether to trust the server expiry field, and how much concurrency a single proxy IP can take. Includes a runnable Python proxy pool.">
+<meta name="keywords" content="crawler proxy pool,python proxy pool,ip rotation,scrapy proxy pool,low watermark refill">
+<meta name="author" content="pstoh">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://pstoh.github.io/en/posts/proxy-pool-design.html">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/posts/proxy-pool-design.html">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/posts/proxy-pool-design.html">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/posts/proxy-pool-design.html">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="pstoh's Notes">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Four Design Decisions Behind a Crawler Proxy Pool (with Python)">
+<meta property="og:description" content="Batch extraction, low-water refill, expiry handling and per-IP concurrency.">
+<meta property="og:url" content="https://pstoh.github.io/en/posts/proxy-pool-design.html">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta property="article:published_time" content="2026-08-29">
+<meta property="article:section" content="Architecture">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Four Design Decisions Behind a Crawler Proxy Pool">
+<meta name="twitter:description" content="Batch extraction, low-water refill, expiry handling and per-IP concurrency.">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://pstoh.github.io/en/posts/proxy-pool-design.html#post",
+      "headline": "Four Design Decisions Behind a Crawler Proxy Pool (with Python)",
+      "description": "Batch extraction, low-water refill, expiry handling and per-IP concurrency for a crawler proxy pool.",
+      "inLanguage": "en",
+      "datePublished": "2026-08-29",
+      "dateModified": "2026-09-27",
+      "author": { "@type": "Person", "name": "pstoh", "url": "https://pstoh.github.io/en/about.html" },
+      "publisher": { "@type": "Person", "name": "pstoh" },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pstoh.github.io/en/posts/proxy-pool-design.html" },
+      "keywords": "proxy pool, ip rotation, python crawler",
+      "articleSection": "Architecture"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://pstoh.github.io/en/" },
+        { "@type": "ListItem", "position": 2, "name": "Four Design Decisions Behind a Crawler Proxy Pool", "item": "https://pstoh.github.io/en/posts/proxy-pool-design.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/en/"><span class="dot">p</span>pstoh's Notes</a>
+    <nav class="site-nav" aria-label="Site navigation">
+      <a href="/en/">Home</a>
+      <a href="/en/about.html">About</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
+      <a href="/posts/proxy-pool-design.html" hreflang="zh-CN" lang="zh-CN">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/en/">Home</a><span>/</span>Four Design Decisions Behind a Crawler Proxy Pool
+    </nav>
+
+    <article class="post">
+      <header>
+        <h1>Four Design Decisions Behind a Crawler Proxy Pool (with Python)</h1>
+        <div class="post-meta">
+          <time datetime="2026-08-29">2026-08-29</time>
+          <span>Architecture</span>
+          <span>11 min read</span>
+          <span>by pstoh</span>
+        </div>
+      </header>
+
+      <div class="post-body">
+        <p>My first crawler broke like this: fetch one IP before every request, throw it away after. The moment the job got real traffic, the extraction API started answering <code>status=406, rate limited</code> and whole batches of requests began failing. That evening I rewrote it as "batch extraction plus a local pool". API calls dropped by an order of magnitude and the success rate went from about 70% back to 99%.</p>
+        <p>These are the four decisions I have re-used in every project since.</p>
+
+        <h2>1. Never extract one IP per request</h2>
+        <p>Extraction endpoints are rate limited for good reason: they hand out resources, they are not a per-request middleware. There is also a latency argument — a 10–25 ms API round trip in front of every fetch caps your throughput no matter how many threads you run.</p>
+        <blockquote><p>What works: pull <strong>10–20 IPs at a time</strong> into a local queue, and refill before the queue runs dry. Extraction frequency drops from "once per request" to "once per few dozen requests".</p></blockquote>
+
+        <h2>2. Size the low-water mark properly</h2>
+        <p>Two thresholds do the job:</p>
+        <ul>
+          <li><strong>High-water mark</strong> (say 30): how much you are willing to stockpile. Short-lived IPs expire while sitting idle, so hoarding is pointless.</li>
+          <li><strong>Low-water mark</strong> (say 5): refill as soon as the pool drops below it.</li>
+        </ul>
+        <p>Do not set the low-water mark to 1. Refilling is a network call; by the time the pool is down to a single IP, that call leaves your workers starved and throwing exceptions. The low-water mark exists precisely to absorb that gap.</p>
+        <p>A rough rule: <code>low-water &asymp; worker count &times; 2</code>. Ten workers, a low-water mark around 20 is comfortable.</p>
+
+        <h2>3. Expiry: trust the server, but floor it locally</h2>
+        <p>Short-lived IPs die in minutes, so stale entries are the difference between a working pool and a pool full of corpses. Both sources of truth are useful:</p>
+        <table>
+          <thead>
+            <tr><th>Source</th><th>Upside</th><th>Watch out for</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>The <code>expire</code> field from the API</td><td>Accurate, matches the service's own view</td><td>Time zones — it is usually local server time</td></tr>
+            <tr><td>A local timestamp</td><td>Simple, no parsing of a format that may change</td><td>Must be set shorter than the real lifetime</td></tr>
+          </tbody>
+        </table>
+        <p>I use both and take the minimum: <code>expire_ts = min(now + local_max_age, server_expire)</code>. A local cap of 170 seconds works well when IPs live for three minutes — it leaves a ten-second margin so you never hand a worker an IP that expires mid-request.</p>
+
+        <h2>4. How much concurrency can one IP take?</h2>
+        <p>This is the most commonly missed part. Rotating IPs does not grant unlimited concurrency; the target still rate limits per IP and will return 403 if you push too hard. My ranges:</p>
+        <ul>
+          <li>2–5 concurrent requests per IP, and no more than ~3 requests per second;</li>
+          <li>for more throughput, add IPs — do not squeeze a single one;</li>
+          <li>the real ceiling for a given site is what the site can absorb, which is the subject of <a href="/en/posts/crawler-rate-limit.html">the rate-limiting post</a>.</li>
+        </ul>
+
+        <h2>The implementation</h2>
+        <p>This pool does three things: thread-safe checkout, automatic low-water refill, and expiry-based eviction.</p>
+        <pre><code>import threading
+import time
+
+import requests
+
+API = "http://api.xydaili.net:2022/tools/ip.ashx"
+
+
+class ProxyPool(object):
+    def __init__(self, order, qty=20, low_watermark=5,
+                 area="", isp="", timeout=10, max_age=170):
+        self.order = order
+        self.qty = qty
+        self.low_watermark = low_watermark
+        self.area = area
+        self.isp = isp
+        self.timeout = timeout
+        self.max_age = max_age
+
+        self._items = []          # [(proxy_url, expire_ts)]
+        self._lock = threading.Lock()
+
+    def _fetch(self):
+        params = {
+            "action": "GetIP",
+            "OrderNumber": self.order,
+            "protocol": 1,
+            "qty": self.qty,
+            "split": "json",
+        }
+        if self.area:
+            params["Area"] = self.area
+        if self.isp:
+            params["Isp"] = self.isp
+
+        # Extraction must go direct: trust_env=False ignores env proxies
+        session = requests.Session()
+        session.trust_env = False
+        try:
+            resp = session.get(API, params=params, timeout=self.timeout)
+        finally:
+            session.close()
+
+        data = resp.json()
+        if data.get("status") != 200 or not data.get("data"):
+            raise RuntimeError("extract failed: %s" % data.get("msg"))
+
+        now = time.time()
+        fresh = []
+        for item in data["data"]:
+            proxy_url = "http://%s:%s" % (item["ip"], item["port"])
+            expire_ts = now + self.max_age
+            try:  # API returns e.g. 2026-09-27 10:26:31
+                text = str(item["expire"])[:19].replace("T", " ")
+                expire_ts = min(expire_ts, time.mktime(
+                    time.strptime(text, "%Y-%m-%d %H:%M:%S")))
+            except Exception:
+                pass
+            fresh.append((proxy_url, expire_ts))
+        return fresh
+
+    def get(self):
+        """Check out a live proxy, refilling when the pool runs low."""
+        with self._lock:
+            now = time.time()
+            self._items = [it for it in self._items if it[1] &gt; now]
+            if len(self._items) &lt; self.low_watermark:
+                self._items.extend(self._fetch())
+            return self._items.pop(0)[0]
+
+    @property
+    def size(self):
+        with self._lock:
+            now = time.time()
+            return len([1 for _, exp in self._items if exp &gt; now])</code></pre>
+        <p>Usage:</p>
+        <pre><code>pool = ProxyPool(order="YOUR-ORDER-ID", qty=20, low_watermark=5)
+
+for url in urls:
+    proxy = pool.get()
+    try:
+        r = requests.get(url, proxies={"http": proxy, "https": proxy}, timeout=10)
+    except requests.RequestException as exc:
+        # Dead short-lived IPs are normal: log it, move on
+        print("swapping IP:", exc.__class__.__name__)</code></pre>
+
+        <h2>Details that bite later</h2>
+        <ul>
+          <li><strong>Keep the extraction call off the proxy.</strong> If your container exports <code>HTTP_PROXY</code>, that call can end up going through a proxy — and when the proxy dies, the whole pipeline dies with it.</li>
+          <li><strong>Do not hot-loop on refill failures.</strong> When extraction returns an error (expired order, rate limit), retrying immediately makes it worse. Log it and back off.</li>
+          <li><strong>Track consumption.</strong> Most APIs return a usage counter — ship it to monitoring, or you will discover an exhausted quota the hard way.</li>
+          <li><strong>Multi-process needs a shared pool.</strong> The class above is per-process; move the queue into Redis when you scale out.</li>
+        </ul>
+
+        <div class="note">
+          <p><strong>Summary:</strong> batch extraction (10–20 per call), a low-water mark around twice your worker count, expiry-based eviction with a local safety margin, and per-IP concurrency capped near 5. Those four together produce a visible jump in crawler stability.</p>
+        </div>
+
+        <p>The code above is packaged as a runnable project alongside 17 other languages — Go, Node.js, TypeScript, Java, C#, PHP, Rust and more — in <a href="https://github.com/pstoh/xydaili-proxy-examples" rel="noopener" target="_blank">xydaili-proxy-examples</a>. The lines I use come from <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a> (Xingyue Proxy), which covers 300+ Chinese cities with automatically rotated short-lived IPs; the field names above match its API.</p>
+      </div>
+
+      <footer class="post-footer">
+        <section class="related">
+          <h2>Read next</h2>
+          <ul>
+            <li><a href="/en/posts/scrapy-proxy-middleware.html">A Scrapy Proxy Middleware That Rotates IPs per Request</a></li>
+            <li><a href="/en/posts/proxy-error-troubleshooting.html">Proxy Errors 407, 406, 403 and Timeouts: How to Tell Them Apart</a></li>
+            <li><a href="/en/posts/crawler-rate-limit.html">Rate Limiting and Etiquette: Don't Take Down Someone's Site</a></li>
+          </ul>
+        </section>
+      </footer>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div><strong>pstoh's Notes</strong><br>Backend and data-collection notes I would otherwise forget.</div>
+      <nav class="links" aria-label="Footer navigation">
+        <a href="/en/">Home</a>
+        <a href="/en/about.html">About</a>
+        <a href="/feed.xml">RSS</a>
+        <a href="/sitemap.xml">Sitemap</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="/" hreflang="zh-CN" lang="zh-CN">中文</a>
+      </nav>
+    </div>
+    <p class="disclaimer">Personal technical notes. Measurements come from my own environment and may differ on yours. The proxy service referenced in the examples is <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理 (Xingyue Proxy)</a>, used for demonstration only — not a purchase recommendation.</p>
+    <p class="disclaimer">&copy; 2026 pstoh · Content licensed <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a></p>
+  </div>
+</footer>
+</body>
+</html>
