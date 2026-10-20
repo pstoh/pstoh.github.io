@@ -3,663 +3,154 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>新阅阅读器（XinYueReader）下载｜Windows 64 位小说阅读器</title>
-<meta name="description" content="新阅阅读器（XinYueReader）官方下载：面向 Windows 的 64 位桌面小说阅读器，支持本地/网络小说、书源、语音朗读、自然语音、本地克隆语音、离线翻译、扫描版 PDF OCR、书签文摘与读屏适配。">
-<meta name="keywords" content="新阅阅读器,XinYueReader,小说阅读器,Windows阅读器,语音朗读,自然语音,本地翻译,扫描版PDF OCR,书源,读屏">
+<title>pstoh 的技术笔记｜爬虫、代理IP 与数据采集实战</title>
+<meta name="description" content="记录爬虫与数据采集里踩过的坑：HTTP 代理原理、代理池设计、Scrapy 中间件、错误码排查与限速合规。附 Python / Go / Node.js 等多语言可运行示例。">
+<meta name="keywords" content="爬虫,代理IP,HTTP代理,代理池,Scrapy,数据采集,IP轮换">
 <meta name="author" content="pstoh">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://pstoh.github.io/">
+<link rel="alternate" hreflang="zh-CN" href="https://pstoh.github.io/">
+<link rel="alternate" hreflang="x-default" href="https://pstoh.github.io/">
+<link rel="alternate" hreflang="en" href="https://pstoh.github.io/en/">
+<link rel="alternate" type="application/rss+xml" title="pstoh 的技术笔记" href="https://pstoh.github.io/feed.xml">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="新阅阅读器">
+<meta property="og:site_name" content="pstoh 的技术笔记">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:title" content="新阅阅读器（XinYueReader）下载">
-<meta property="og:description" content="Windows 64 位桌面小说阅读器：本地/网络小说、书源、语音朗读、自然语音、本地克隆语音、离线翻译、扫描版 PDF OCR、书签文摘与读屏适配。">
+<meta property="og:title" content="pstoh 的技术笔记｜爬虫、代理IP 与数据采集实战">
+<meta property="og:description" content="记录爬虫与数据采集里踩过的坑：HTTP 代理原理、代理池设计、Scrapy 中间件、错误码排查与限速合规。">
 <meta property="og:url" content="https://pstoh.github.io/">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="新阅阅读器（XinYueReader）下载">
-<meta name="twitter:description" content="Windows 64 位桌面小说阅读器：本地/网络小说、书源、语音朗读、离线翻译、扫描版 PDF OCR、读屏适配。">
+<meta property="og:image" content="https://pstoh.github.io/assets/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="pstoh 的技术笔记">
+<meta name="twitter:description" content="爬虫、代理IP 与数据采集实战笔记">
+<meta name="twitter:image" content="https://pstoh.github.io/assets/og-cover.png">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#1f6feb">
-<style>
-  :root{
-    --bg:#f5f7fb; --surface:#ffffff; --surface-2:#eef3fa; --text:#16202c; --muted:#5b6675;
-    --brand:#1f6feb; --brand-strong:#1554b8; --teal:#0f9d94; --border:#dbe3ee;
-    --shadow:0 18px 50px rgba(25,52,90,.10); --shadow-sm:0 6px 18px rgba(25,52,90,.07);
-    --radius:18px; --radius-sm:12px; --max:1120px;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --bg:#0d1117; --surface:#151b23; --surface-2:#1b2430; --text:#e8eef7; --muted:#9aa7b8;
-      --brand:#5b9dff; --brand-strong:#7cb2ff; --teal:#3dd3c6; --border:#293443;
-      --shadow:0 18px 50px rgba(0,0,0,.35); --shadow-sm:0 6px 18px rgba(0,0,0,.25);
+<link rel="apple-touch-icon" href="/assets/favicon.svg">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://pstoh.github.io/#website",
+      "url": "https://pstoh.github.io/",
+      "name": "pstoh 的技术笔记",
+      "description": "爬虫、代理IP 与数据采集实战笔记",
+      "inLanguage": "zh-CN",
+      "publisher": { "@id": "https://pstoh.github.io/#author" }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://pstoh.github.io/#author",
+      "name": "pstoh",
+      "url": "https://pstoh.github.io/about.html",
+      "jobTitle": "后端 / 数据采集开发",
+      "knowsAbout": ["爬虫", "HTTP 代理", "数据采集", "Python", "Go"]
+    },
+    {
+      "@type": "ItemList",
+      "name": "最新文章",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "url": "https://pstoh.github.io/posts/crawler-rate-limit.html" },
+        { "@type": "ListItem", "position": 2, "url": "https://pstoh.github.io/posts/scrapy-proxy-middleware.html" },
+        { "@type": "ListItem", "position": 3, "url": "https://pstoh.github.io/posts/proxy-error-troubleshooting.html" },
+        { "@type": "ListItem", "position": 4, "url": "https://pstoh.github.io/posts/proxy-pool-design.html" },
+        { "@type": "ListItem", "position": 5, "url": "https://pstoh.github.io/posts/how-http-proxy-works.html" }
+      ]
     }
-  }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none!important;animation:none!important} }
-  body{
-    margin:0; background:
-      radial-gradient(900px 500px at 8% -5%, rgba(31,111,235,.14), transparent 60%),
-      radial-gradient(800px 500px at 100% 0%, rgba(15,157,148,.12), transparent 55%),
-      var(--bg);
-    color:var(--text); font-family:"Microsoft YaHei","微软雅黑",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-    font-size:17px; line-height:1.8; text-rendering:optimizeLegibility;
-  }
-  a{color:var(--brand); text-decoration-thickness:1px; text-underline-offset:3px}
-  a:hover{color:var(--brand-strong)}
-  :focus-visible{outline:3px solid var(--brand); outline-offset:3px; border-radius:6px}
-  .skip{position:absolute; left:-9999px; top:8px; background:var(--surface); color:var(--text); padding:10px 16px; border-radius:10px; z-index:100; box-shadow:var(--shadow-sm)}
-  .skip:focus{left:16px}
-  .wrap{max-width:var(--max); margin:0 auto; padding:0 22px}
-  header.site{
-    position:sticky; top:0; z-index:50; backdrop-filter:blur(14px);
-    background:color-mix(in srgb, var(--surface) 82%, transparent);
-    border-bottom:1px solid var(--border);
-  }
-  .nav{display:flex; align-items:center; gap:22px; min-height:68px}
-  .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; color:var(--text); text-decoration:none; letter-spacing:.2px}
-  .brand .mark{width:34px; height:34px; border-radius:10px; display:grid; place-items:center; color:#fff;
-    background:linear-gradient(135deg,var(--brand),var(--teal)); font-size:17px; box-shadow:0 6px 16px rgba(31,111,235,.35)}
-  .nav nav{margin-left:auto; display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center}
-  .nav nav a{color:var(--muted); text-decoration:none; font-size:15px; padding:6px 2px; border-bottom:2px solid transparent}
-  .nav nav a:hover{color:var(--text); border-bottom-color:var(--brand)}
-  main{display:block}
-  section{scroll-margin-top:88px}
-  .hero{display:grid; grid-template-columns:1.15fr .85fr; gap:44px; align-items:center; padding:64px 0 40px}
-  .eyebrow{display:inline-flex; align-items:center; gap:8px; margin:0 0 14px; padding:6px 12px; border:1px solid var(--border);
-    border-radius:999px; background:var(--surface); color:var(--muted); font-size:14px; font-weight:600}
-  .eyebrow .dot{width:8px; height:8px; border-radius:50%; background:var(--teal); box-shadow:0 0 0 4px rgba(15,157,148,.18)}
-  h1{font-size:clamp(32px,5vw,54px); line-height:1.15; margin:0 0 16px; letter-spacing:-.5px}
-  h1 .en{display:block; font-size:.34em; color:var(--muted); font-weight:700; letter-spacing:2px; margin-top:10px}
-  .lede{font-size:18px; color:var(--muted); margin:0 0 24px; max-width:44em}
-  .actions{display:flex; flex-wrap:wrap; gap:12px; margin:26px 0 18px}
-  .btn{display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:50px; padding:0 22px;
-    border-radius:12px; font-weight:800; font-size:16px; text-decoration:none; border:1px solid transparent; cursor:pointer;
-    transition:transform .15s ease, box-shadow .15s ease, background .15s ease}
-  .btn:hover{transform:translateY(-1px)}
-  .btn.primary{background:linear-gradient(135deg,var(--brand),#2d8cf0); color:#fff; box-shadow:0 12px 26px rgba(31,111,235,.32)}
-  .btn.primary:hover{color:#fff; box-shadow:0 16px 32px rgba(31,111,235,.4)}
-  .btn.ghost{background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-sm)}
-  .btn.ghost:hover{color:var(--text); border-color:var(--brand)}
-  .facts{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 20px; padding:0; margin:22px 0 0; list-style:none}
-  .facts li{display:flex; gap:8px; align-items:baseline; color:var(--muted); font-size:14px}
-  .facts strong{color:var(--text); font-weight:700}
-  .facts code{font-size:13px; word-break:break-all}
-  .mini{color:var(--muted); font-size:14px; margin:14px 0 0}
-  .hero-card{position:relative}
-  .mock{
-    background:var(--surface); border:1px solid var(--border); border-radius:22px; box-shadow:var(--shadow);
-    padding:18px; transform:rotate(.6deg);
-  }
-  .mock .bar{display:flex; gap:7px; align-items:center; padding:2px 4px 14px}
-  .mock .bar i{width:10px; height:10px; border-radius:50%; background:var(--border); display:block}
-  .mock .bar i:nth-child(1){background:#ff6b6b}.mock .bar i:nth-child(2){background:#ffd166}.mock .bar i:nth-child(3){background:#36c98f}
-  .mock .bar span{margin-left:auto; font-size:12px; color:var(--muted)}
-  .tabs{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px}
-  .tabs span{font-size:12px; padding:4px 9px; border-radius:999px; background:var(--surface-2); color:var(--muted); border:1px solid var(--border)}
-  .tabs span.on{background:var(--brand); color:#fff; border-color:transparent}
-  .page{background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:18px 20px; min-height:238px}
-  .page h4{margin:0 0 10px; font-size:15px; color:var(--muted); font-weight:700}
-  .page p{margin:0 0 9px; font-size:14px; line-height:2; color:var(--text); opacity:.86}
-  .page .barline{height:9px; border-radius:6px; background:color-mix(in srgb, var(--text) 10%, transparent); margin:8px 0}
-  .page .barline.s{width:72%}.page .barline.m{width:92%}.page .barline.l{width:84%}
-  .float-card{position:absolute; right:-10px; bottom:-18px; background:var(--surface); border:1px solid var(--border);
-    box-shadow:var(--shadow-sm); border-radius:14px; padding:10px 14px; font-size:13px; color:var(--muted); display:flex; gap:8px; align-items:center}
-  .float-card b{color:var(--teal)}
-  .section-head{display:flex; align-items:end; justify-content:space-between; gap:20px; margin:54px 0 18px}
-  .section-head h2{font-size:clamp(24px,3vw,32px); margin:0; letter-spacing:-.3px}
-  .section-head p{margin:0; color:var(--muted); font-size:15px; max-width:46em}
-  .grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px}
-  .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-sm)}
-  .card .ico{width:42px; height:42px; border-radius:12px; display:grid; place-items:center; font-weight:800; font-size:18px;
-    color:#fff; background:linear-gradient(135deg,var(--brand),var(--teal)); margin-bottom:12px; box-shadow:0 8px 18px rgba(31,111,235,.2)}
-  .card h3{margin:0 0 6px; font-size:17px}
-  .card p{margin:0; color:var(--muted); font-size:14px; line-height:1.75}
-  .callout{display:flex; gap:14px; align-items:flex-start; background:color-mix(in srgb, var(--brand) 8%, var(--surface));
-    border:1px solid color-mix(in srgb, var(--brand) 28%, var(--border)); border-radius:var(--radius-sm); padding:16px 18px; margin:16px 0}
-  .callout .ico{flex:0 0 auto; width:30px; height:30px; border-radius:50%; display:grid; place-items:center; background:var(--brand); color:#fff; font-weight:800}
-  .callout p{margin:0; font-size:14px}
-  .dl-grid{display:grid; grid-template-columns:1.15fr .85fr .85fr; gap:16px}
-  .dl-card{min-width:0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:10px}
-  .dl-card.primary{grid-row:span 2; border-color:color-mix(in srgb, var(--brand) 45%, var(--border));
-    background:linear-gradient(180deg,color-mix(in srgb, var(--brand) 9%, var(--surface)),var(--surface))}
-  .dl-card h3{margin:0; font-size:17px; display:flex; align-items:center; gap:8px}
-  .tag{font-size:11px; padding:2px 8px; border-radius:999px; background:var(--surface-2); color:var(--muted); border:1px solid var(--border); font-weight:700}
-  .tag.hot{background:color-mix(in srgb, var(--teal) 16%, var(--surface)); color:var(--teal); border-color:color-mix(in srgb, var(--teal) 35%, var(--border))}
-  .urlbox{display:flex; gap:8px; align-items:stretch; margin-top:auto; min-width:0}
-  .urlbox code{flex:1; min-width:0; background:var(--surface-2); border:1px solid var(--border); border-radius:10px;
-    padding:9px 11px; font-size:12px; color:var(--muted); overflow:auto; white-space:nowrap}
-  .copy{flex:0 0 auto; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:10px; padding:0 14px; font-weight:700; cursor:pointer}
-  .copy:hover{border-color:var(--brand)}
-  .copy.done{border-color:var(--teal); color:var(--teal)}
-  .dl-note{font-size:13px; color:var(--muted); margin:0}
-  .dl-note strong{color:var(--text)}
-  .md5{font-family:ui-monospace,Consolas,"Courier New",monospace; font-size:13px; background:var(--surface-2);
-    border:1px dashed var(--border); border-radius:10px; padding:10px 12px; word-break:break-all}
-  details.acc{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); box-shadow:var(--shadow-sm); margin:12px 0; overflow:hidden}
-  details.acc summary{cursor:pointer; list-style:none; padding:16px 18px; font-weight:800; display:flex; align-items:center; gap:10px}
-  details.acc summary::-webkit-details-marker{display:none}
-  details.acc summary::before{content:"＋"; width:24px; height:24px; border-radius:8px; display:grid; place-items:center;
-    background:var(--surface-2); color:var(--brand); font-weight:800; flex:0 0 auto}
-  details.acc[open] summary::before{content:"－"}
-  details.acc .body{padding:0 20px 20px 52px; color:var(--muted); font-size:15px}
-  details.acc .body h4{color:var(--text); margin:16px 0 6px; font-size:16px}
-  details.acc .body ul,.body ol{padding-left:1.35em; margin:8px 0}
-  details.acc .body li{margin:4px 0}
-  details.acc .body strong{color:var(--text)}
-  kbd{font-family:ui-monospace,Consolas,"Courier New",monospace; font-size:.86em; padding:1px 6px; border-radius:6px;
-    background:var(--surface-2); border:1px solid var(--border); box-shadow:0 1px 0 var(--border); white-space:nowrap}
-  .tablewrap{overflow:auto; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface)}
-  table{border-collapse:collapse; width:100%; min-width:640px; font-size:14px}
-  th,td{padding:11px 14px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top}
-  th{background:var(--surface-2); font-size:13px; color:var(--muted); letter-spacing:.2px}
-  tr:last-child td{border-bottom:0}
-  .faq details{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:0 18px; margin:10px 0; box-shadow:var(--shadow-sm)}
-  .faq summary{cursor:pointer; padding:14px 0; font-weight:800}
-  .faq .a{padding:0 0 16px; color:var(--muted); font-size:15px}
-  .notes{white-space:pre-wrap; font-family:inherit; font-size:14px; color:var(--muted); background:var(--surface); border:1px solid var(--border);
-    border-radius:var(--radius-sm); padding:18px 20px; box-shadow:var(--shadow-sm); margin:0}
-  footer.site{margin-top:60px; border-top:1px solid var(--border); padding:28px 0 40px; color:var(--muted); font-size:14px}
-  footer.site .inner{display:flex; flex-wrap:wrap; gap:10px 24px; align-items:center; justify-content:space-between}
-  footer.site a{color:var(--muted)}
-  .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
-  @media (max-width: 980px){
-    .hero{grid-template-columns:1fr; gap:28px; padding-top:44px}
-    .hero-card{max-width:620px}
-    .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .dl-grid{grid-template-columns:1fr 1fr}
-    .dl-card.primary{grid-column:1/-1; grid-row:auto}
-  }
-  @media (max-width: 620px){
-    body{font-size:16px}
-    .nav{min-height:60px}
-    .nav nav a{font-size:14px}
-    .wrap{padding:0 16px}
-    .facts{grid-template-columns:1fr}
-    .grid{grid-template-columns:1fr}
-    .dl-grid{grid-template-columns:1fr}
-    details.acc .body{padding:0 16px 18px 18px}
-    .mock{transform:none}
-  }
-</style>
+  ]
+}
+</script>
 </head>
 <body>
-<a class="skip" href="#main">跳到正文</a>
-
-<header class="site">
-  <div class="wrap nav">
-    <a class="brand" href="/"><span class="mark" aria-hidden="true">阅</span>新阅阅读器</a>
-    <nav aria-label="站点导航">
-      <a href="#features">功能</a>
-      <a href="#download">下载</a>
-      <a href="#guide">使用说明</a>
-      <a href="#hotkeys">快捷键</a>
-      <a href="#faq">常见问题</a>
-      <a href="#changelog">更新日志</a>
-      <a href="/blog.html">技术笔记</a>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/"><span class="dot">p</span>pstoh 的技术笔记</a>
+    <nav class="site-nav" aria-label="站点导航">
+      <a href="/" aria-current="page">首页</a>
+      <a href="/about.html">关于</a>
+      <a href="https://github.com/pstoh" rel="me noopener" target="_blank">GitHub</a>
     </nav>
   </div>
 </header>
-<main id="main">
-  <div class="wrap">
-    <section class="hero" aria-labelledby="hero-title">
-      <div>
-        <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Windows · 64 位 · 离线优先 · 读屏友好</p>
-        <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
-        <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
-        <div class="actions">
-          <a class="btn primary" href="/app/XinYue/XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.2</span>（<span id="sizeText">约 36 MB</span>）</span></a>
-          <a class="btn ghost" href="#download">镜像下载</a>
-          <a class="btn ghost" href="#guide">详细使用说明</a>
-        </div>
-        <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.2</strong></li>
-          <li><span>安装包大小</span><strong id="sizeFact">37,924,195 字节</strong></li>
-          <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
-          <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
-        </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">8F5E6E2F02AB1D16738BA4426F8C7252</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
-      </div>
-      <div class="hero-card" aria-hidden="true">
-        <div class="mock">
-          <div class="bar"><i></i><i></i><i></i><span>XinYueReader.exe</span></div>
-          <div class="tabs">
-            <span class="on">阅读</span><span>书库</span><span>书架</span><span>最近阅读</span><span>文摘</span><span>书签</span><span>翻译</span><span>设置</span>
-          </div>
-          <div class="page">
-            <h4>正在阅读 · 第十章</h4>
-            <p>光标停在哪里，就从哪里继续读。F7 打开章节列表，Tab 直接跳到“下一章”。</p>
-            <div class="barline l"></div><div class="barline m"></div><div class="barline s"></div>
-            <p>朗读、翻译、书签、文摘都在右键菜单里；设置页可以换引擎、换发音人、调字体和快捷键。</p>
-          </div>
-        </div>
-        <div class="float-card"><span aria-hidden="true">●</span><span><b>读屏适配</b> · 逐行朗读 / 章节 / 焦点</span></div>
+
+<main>
+  <div class="wrap-wide">
+    <section class="hero">
+      <h1>爬虫跑得稳不稳，<br>八成取决于出口 IP 这一层</h1>
+      <p class="lede">这里记录我在数据采集项目里踩过的坑：代理怎么选、代理池怎么设计、Scrapy 中间件怎么写、遇到 407 和 406 从哪儿查起。每篇都尽量给出能直接跑的代码，而不是停在概念上。</p>
+      <div class="tags">
+        <span class="tag">HTTP 代理</span>
+        <span class="tag">代理池 / IP 轮换</span>
+        <span class="tag">Scrapy</span>
+        <span class="tag">Python · Go · Node.js</span>
+        <span class="tag">限速与合规</span>
       </div>
     </section>
 
-    <section id="features" aria-labelledby="features-title">
-      <div class="section-head">
-        <div>
-          <h2 id="features-title">软件简介</h2>
-          <p>一个程序覆盖“找书 → 读 → 听 → 译 → 整理 → 导出”的完整流程。下面这些功能都在当前版本里。</p>
-        </div>
-      </div>
-      <div class="grid">
-        <article class="card"><div class="ico" aria-hidden="true">读</div><h3>本地与网络阅读</h3><p>txt、epub、mobi、html、md、fb2、rtf、pdf、chm、doc(x)、zip/rar/7z 打包小说；也支持网络书源与开源阅读 Legado 规则。</p></article>
-        <article class="card"><div class="ico" aria-hidden="true">听</div><h3>三种语音引擎</h3><p>SAPI5（含第三方发音人）、微软自然语音（装适配器后自动出现）、本地克隆语音（用自己的声音朗读）。</p></article>
-        <article class="card"><div class="ico" aria-hidden="true">译</div><h3>离线翻译</h3><p>本地模型中英互译，不依赖在线翻译；支持按段、整章、双语对照，译文有缓存。</p></article>
-        <article class="card"><div class="ico" aria-hidden="true">扫</div><h3>扫描版 PDF OCR</h3><p>逐页识别扫描件，和文字层合并；首次识别慢一些，之后直接读缓存。</p></article>
-        <article class="card"><div class="ico" aria-hidden="true">源</div><h3>书源管理</h3><p>导入、编辑、测试书源；支持百度/搜狗搜索、换源、章节更新与解析规则。</p></article>
-        <article class="card"><div class="ico" aria-hidden="true">签</div><h3>书签 / 文摘 / 高亮</h3><p>列表分页、增删改查、跳转、批量删除与导出；正文右键即可添加。</p></article>
-        <article class="card"><div class="ico" aria-hidden="true">屏</div><h3>读屏与键盘</h3><p>原生编辑控件、逐行朗读、无障碍名、Tab 焦点链、F7/F8、章节数字框 ↑↓ 与回车跳转。</p></article>
-        <article class="card"><div class="ico" aria-hidden="true">备</div><h3>数据与备份</h3><p>SQLite 单文件数据库，自动每日备份；一键备份/恢复、存储空间清理、阅读统计。</p></article>
-      </div>
-      <div class="callout"><span class="ico" aria-hidden="true">i</span><p><strong>纯绿色版：</strong>下载的是 zip 压缩包，解压到固定目录即可运行，没有安装程序。程序是单实例，重复双击只会把已有窗口叫出来。</p></div>
+    <div class="section-title">
+      <h2>最新文章</h2>
+      <span class="hint">共 5 篇 · 按时间倒序</span>
+    </div>
+
+    <section class="cards">
+      <article class="card">
+        <div class="meta"><span class="k">采集规范</span><time datetime="2026-09-25">2026-09-25</time><span>约 8 分钟</span></div>
+        <h3><a href="/posts/crawler-rate-limit.html">采集限速与合规：别把对方站点打挂</a></h3>
+        <p>并发不是越高越好。从单站限速、退避重试、缓存复用三个角度，聊聊怎么在不打扰对方服务的前提下把数据拿全。</p>
+      </article>
+
+      <article class="card">
+        <div class="meta"><span class="k">Scrapy</span><time datetime="2026-09-16">2026-09-16</time><span>约 9 分钟</span></div>
+        <h3><a href="/posts/scrapy-proxy-middleware.html">Scrapy 代理中间件：每个请求自动换 IP</a></h3>
+        <p>下载中间件的两个钩子各管什么、重试为什么没换 IP、为什么失败请求反而变多了——一个生产可用的中间件写法。</p>
+      </article>
+
+      <article class="card">
+        <div class="meta"><span class="k">排错</span><time datetime="2026-09-08">2026-09-08</time><span>约 7 分钟</span></div>
+        <h3><a href="/posts/proxy-error-troubleshooting.html">代理返回 407、406、403、超时，分别怎么排查</a></h3>
+        <p>这几个状态码来自不同环节，含义完全不一样。一张排查表 + 对应处置方式，帮你少走弯路。</p>
+      </article>
+
+      <article class="card">
+        <div class="meta"><span class="k">架构</span><time datetime="2026-08-29">2026-08-29</time><span>约 11 分钟</span></div>
+        <h3><a href="/posts/proxy-pool-design.html">爬虫代理池的四个关键设计（附 Python 实现）</a></h3>
+        <p>为什么不能循环单条提取、低水位补货怎么算、失效 IP 怎么剔除、单 IP 该给多少并发。含可直接运行的本地池子代码。</p>
+      </article>
+
+      <article class="card">
+        <div class="meta"><span class="k">基础</span><time datetime="2026-08-18">2026-08-18</time><span>约 6 分钟</span></div>
+        <h3><a href="/posts/how-http-proxy-works.html">HTTP 代理到底怎么工作：一次请求的完整旅程</a></h3>
+        <p>绝对 URL 和 CONNECT 隧道差在哪里、HTTPS 为什么必须先握手、白名单和账号密码两种认证各自适用什么场景。</p>
+      </article>
     </section>
 
-    <section id="download" aria-labelledby="download-title">
-      <div class="section-head">
-        <div>
-          <h2 id="download-title">下载</h2>
-          <p>所有镜像指向同一个 <code>XinYue.zip</code>，MD5 应完全一致。主站打不开时按顺序尝试镜像。</p>
-        </div>
-      </div>
-      <div class="dl-grid">
-        <div class="dl-card primary">
-          <h3>主下载 <span class="tag hot">推荐</span></h3>
-          <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="/app/XinYue/XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.2</span></span></a>
-          <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">8F5E6E2F02AB1D16738BA4426F8C7252</span></p>
-        </div>
-        <div class="dl-card">
-          <h3>GitHub Raw <span class="tag">镜像</span></h3>
-          <p class="dl-note">直接读仓库文件，适合 GitHub Pages 暂时打不开时。</p>
-          <div class="urlbox"><code>https://raw.githubusercontent.com/pstoh/pstoh.github.io/master/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://raw.githubusercontent.com/pstoh/pstoh.github.io/master/app/XinYue/XinYue.zip">复制</button></div>
-          <a class="btn ghost" href="https://raw.githubusercontent.com/pstoh/pstoh.github.io/master/app/XinYue/XinYue.zip" target="_blank" rel="noopener">打开镜像</a>
-        </div>
-        <div class="dl-card">
-          <h3>GitHub 仓库直链 <span class="tag">镜像</span></h3>
-          <p class="dl-note">github.com 的 raw 入口，和 Raw 域名互为备份。</p>
-          <div class="urlbox"><code>https://github.com/pstoh/pstoh.github.io/raw/master/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://github.com/pstoh/pstoh.github.io/raw/master/app/XinYue/XinYue.zip">复制</button></div>
-          <a class="btn ghost" href="https://github.com/pstoh/pstoh.github.io/raw/master/app/XinYue/XinYue.zip" target="_blank" rel="noopener">打开镜像</a>
-        </div>
-        <div class="dl-card">
-          <h3>ghfast 加速 <span class="tag">第三方</span></h3>
-          <p class="dl-note">第三方 GitHub 加速节点，可能限速或失效；文件仍是同一个。</p>
-          <div class="urlbox"><code>https://ghfast.top/https://raw.githubusercontent.com/pstoh/pstoh.github.io/master/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://ghfast.top/https://raw.githubusercontent.com/pstoh/pstoh.github.io/master/app/XinYue/XinYue.zip">复制</button></div>
-          <a class="btn ghost" href="https://ghfast.top/https://raw.githubusercontent.com/pstoh/pstoh.github.io/master/app/XinYue/XinYue.zip" target="_blank" rel="noopener">打开镜像</a>
-        </div>
-        <div class="dl-card">
-          <h3>更新信息 <span class="tag">JSON</span></h3>
-          <p class="dl-note">程序“检查更新”读取的版本、更新说明和 MD5。</p>
-          <div class="urlbox"><code>https://pstoh.github.io/app/XinYue/UpdateInfo.json</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/UpdateInfo.json">复制</button></div>
-          <a class="btn ghost" href="/app/XinYue/UpdateInfo.json">查看 UpdateInfo.json</a>
-        </div>
-      </div>
-      <p class="mini" id="copyStatus" role="status" aria-live="polite"></p>
-      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>8F5E6E2F02AB1D16738BA4426F8C7252</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
-    </section>
-    <section id="guide" aria-labelledby="guide-title">
-      <div class="section-head">
-        <div>
-          <h2 id="guide-title">详细使用说明</h2>
-          <p>点击每一节的标题展开。读屏用户可以直接用标题导航（H 键）跳到需要的章节。</p>
-        </div>
-      </div>
-
-      <details class="acc" open>
-        <summary>1. 安装、首次启动与卸载</summary>
-        <div class="body">
-          <h4>安装（绿色版）</h4>
-          <ol>
-            <li>把 <code>XinYue.zip</code> 解压到一个<strong>固定目录</strong>，例如 <code>D:\XinYueReader</code>。不要放在桌面、下载目录或临时目录，升级时容易被清理。</li>
-            <li>双击 <code>XinYueReader.exe</code>。程序是 64 位，需要 <strong>.NET Framework 4.7.2</strong>（Windows 10 1803+ / Windows 11 通常自带；Win7/8 需要先安装运行库）。</li>
-            <li>如果 Windows 弹出 SmartScreen“Windows 已保护你的电脑”，点“更多信息 → 仍要运行”。程序未做商业代码签名，这是正常提示；请用上面的 MD5 确认文件完整。</li>
-          </ol>
-          <h4>首次启动</h4>
-          <ul>
-            <li>程序会在 <code>文档\XinYueConfig\</code> 建立数据库和配置；如果你的“文档”被重定向（例如 D 盘），数据就在那个位置。</li>
-            <li>启动后会自动打开上次阅读的书和章节；焦点会尽量落到阅读框。若焦点不在阅读框，按 <kbd>Tab</kbd> 或点击正文即可。</li>
-            <li>程序是单实例：已经在运行时再次双击，只会把已有窗口叫出来，不会开第二个。</li>
-          </ul>
-          <h4>卸载</h4>
-          <ul>
-            <li>关闭程序，删除程序目录即可。若要彻底清除数据，再删除 <code>文档\XinYueConfig\</code>（<strong>删除后书架、书签、文摘、阅读进度都会消失</strong>，请先备份）。</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="acc">
-        <summary>2. 主界面：8 个选项卡</summary>
-        <div class="body">
-          <p>主界面用选项卡组织，<kbd>Ctrl</kbd>+<kbd>1</kbd>…<kbd>8</kbd> 可直接切换，<kbd>Ctrl</kbd>+<kbd>Tab</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd> 循环切换。</p>
-          <div class="tablewrap"><table>
-            <thead><tr><th>选项卡</th><th>用途</th></tr></thead>
-            <tbody>
-              <tr><td>阅读</td><td>正文、书签侧栏、章节目录、上一章/下一章/跳转、字号与排版。</td></tr>
-              <tr><td>书库</td><td>按书源搜索网络小说、查看分类、解析章节、打开网络小说。</td></tr>
-              <tr><td>书架</td><td>已收藏的书；可导入本地图书、打开章节、删除、批量管理。</td></tr>
-              <tr><td>最近阅读</td><td>按阅读时间排序，回车继续上次的章节和光标位置。</td></tr>
-              <tr><td>文摘</td><td>摘录列表，分页展示，支持增删改查和导出。</td></tr>
-              <tr><td>书签</td><td>书签列表，支持跳转、删除、批量操作。</td></tr>
-              <tr><td>翻译</td><td>整段/整章翻译、双语对照、翻译缓存。</td></tr>
-              <tr><td>设置</td><td>常规、语音、阅读排版、快捷键、模型管理等。</td></tr>
-            </tbody>
-          </table></div>
-        </div>
-      </details>
-
-      <details class="acc">
-        <summary>3. 打开本地小说</summary>
-        <div class="body">
-          <ul>
-            <li>主菜单 <strong>文件 → 打开</strong>，选择 txt / epub / mobi / html / md / fb2 / rtf / pdf / chm / doc(x) / zip / rar / 7z 等文件。</li>
-            <li>批量加书：在<strong>书架</strong>的图书列表里右键 → <strong>导入</strong>，可一次选多个文件。导入后会解析目录并加入书架。</li>
-            <li>压缩包小说会先解压/读取内部文本；PDF 若没有文字层，程序会提示或自动走本地 OCR（见第 8 节）。</li>
-            <li>txt 编码识别失败出现乱码时，换一个编码正确的版本，或在书架里重新导入；程序会尽量自动识别 UTF-8 / GBK。</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="acc">
-        <summary>4. 打开网络小说、书库与书源</summary>
-        <div class="body">
-          <h4>从网址打开</h4>
-          <ol>
-            <li>主菜单 <strong>文件 → 打开网络小说</strong>。</li>
-            <li>填写书名、目录页网址，选择图书类型，点确定。</li>
-            <li>程序会解析章节；成功后焦点会到章节列表，选一章即可开始阅读，并把书加入书架。</li>
-            <li>解析失败时会提示原因；可以检查网址是否是目录页、站点是否需要验证码，或换一个书源。</li>
-          </ol>
-          <h4>在书库里搜索</h4>
-          <ul>
-            <li><strong>书库</strong>选项卡选择书源（百度搜索 / 搜狗搜索 / 自定义书源），输入关键词搜索。</li>
-            <li>百度/搜狗搜索会调用内置浏览器；如果出现验证码，请先在浏览器里完成验证，再回到程序重试。</li>
-            <li>支持导入开源阅读（Legado）书源：<strong>书库 → 管理书源 → 导入</strong>；导入后可测试、编辑、启用/停用。</li>
-            <li>读到一半发现书源失效，可用 <strong>换源</strong>（默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd>）从其他书源继续。</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="acc">
-        <summary>5. 阅读操作：翻章、跳转、查找、排版</summary>
-        <div class="body">
-          <ul>
-            <li><kbd>F7</kbd> 打开/收起章节列表；<kbd>F8</kbd> 打开/收起书签列表。焦点在阅读区时也有效。</li>
-            <li>底部“第 N 章，共 M 章”数字框：<kbd>↑</kbd> 值 +1、<kbd>↓</kbd> 值 −1，<kbd>Enter</kbd> 跳转。</li>
-            <li><strong>上一章 / 下一章 / 跳转</strong>按钮；加载期间按钮会自动禁用，避免连点。</li>
-            <li>阅读区按 <kbd>Tab</kbd>：优先跳到“下一章”按钮；没有下一章时跳到选项卡表头。<kbd>Shift</kbd>+<kbd>Tab</kbd> 反向。</li>
-            <li>右键正文：开始/暂停/停止朗读、添加书签、添加文摘、过滤本段、查词典、高亮、全选、复制。</li>
-            <li>正文内查找：按用户要求主界面没有单独的查找框；可使用读屏软件自带的查找功能，或通过 F7 章节目录定位。</li>
-            <li>排版：<strong>设置 → 阅读设置</strong>可调字体、字号、加粗、行距、段距、首行缩进、页边距、自动换行；也可用工具菜单的自动滚动和朗读定时。</li>
-            <li>从书架/书库/最近阅读打开图书时，会回到<strong>上次阅读的章节和光标位置</strong>；在章节列表里<strong>明确选另一章</strong>则从该章开头读。</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="acc">
-        <summary>6. 语音朗读：SAPI5、自然语音、本地克隆</summary>
-        <div class="body">
-          <h4>选择引擎</h4>
-          <p>打开 <strong>设置 → 语音设置</strong>，在“语音引擎”里选择：</p>
-          <ul>
-            <li><strong>SAPI5.0</strong>：系统自带语音（如慧慧、Zira），也支持第三方 SAPI5 发音人。右侧“语音角色”列出系统里所有可用角色。</li>
-            <li><strong>微软自然语音</strong>：需要先安装 NaturalVoiceSAPIAdapter。设置页有“安装自然语音(_V)”一键安装；装完重启程序。它会把 Windows 讲述人的自然语音（晓晓、云希、Aria 等）和 Edge 在线语音暴露给 SAPI5。</li>
-            <li><strong>本地克隆语音</strong>：先在模型管理里下载 GPT-SoVITS 引擎，再选择 5 秒~1 分钟的参考音频（说 10 字以上中文最好）。适合想用自己的声音朗读的用户。</li>
-          </ul>
-          <h4>朗读操作</h4>
-          <ul>
-            <li>默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>S</kbd> 开始/停止朗读；<kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd> 暂停/继续。可在设置 → 快捷键里改成全局或程序内。</li>
-            <li>朗读时按“段”推进：程序会把正文合并成约 150 字的段，整段合成后连续播放，减少段与段之间的空档。</li>
-            <li>试听：在语音设置里点“试听”，确认发音人、语速、音量正常后再开始朗读。</li>
-            <li>读屏逐行朗读：关闭数字键（NumLock 关），按小键盘 <kbd>7</kbd>；光标在哪就从哪开始，读完一行继续下一行。</li>
-            <li>睡眠定时 / 读完本章停止：在工具菜单里设置，适合睡前听书。</li>
-          </ul>
-          <h4>合成到文件</h4>
-          <ul>
-            <li><strong>工具 → 合成语音</strong>：把一章合成一个 wav；<strong>合成全本小说</strong>：合并 txt 或逐章 wav，可续跑、失败重试。</li>
-            <li>自然语音取决于所选角色：Edge 在线语音需要联网，Narrator 本地语音不需要；本地克隆和 SAPI5 可离线。</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="acc">
-        <summary>7. 翻译：本地模型中英互译</summary>
-        <div class="body">
-          <ul>
-            <li>先在 <strong>工具 → 模型管理</strong> 下载翻译模型（中译英 / 英译中，opus-mt）。模型完全在本地运行，不上传正文。</li>
-            <li>没下载模型就使用翻译，程序会提示你先下载，不会静默失败。</li>
-            <li>翻译方式：<strong>翻译选中文本</strong>（默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Q</kbd>）、<strong>翻译当前段落</strong>（<kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd>）、<strong>整章翻译</strong>。</li>
-            <li>设置里可开“双语对照”：上行原文、下行译文；后台会预取下一章的翻译，读完一章后切换更快。</li>
-            <li>译文有缓存，同一段第二次翻译基本是瞬时的。</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="acc">
-        <summary>8. 扫描版 PDF 的本地 OCR</summary>
-        <div class="body">
-          <ul>
-            <li>打开没有文字层的扫描版 PDF 时，程序会逐页判断：某页文字太少或像乱码，就只对那一页做 OCR，再和文字层合并。</li>
-            <li>OCR 使用本地 Tesseract 5（随程序提供），不需要联网，也不上传文件。</li>
-            <li>第一次识别会慢一些；结果会缓存为 <code>&lt;原文件名&gt;.ocr.txt</code>，下次打开直接读缓存。</li>
-            <li>识别质量取决于扫描清晰度；倾斜、低分辨率、手写体的效果会差一些。</li>
-          </ul>
-        </div>
-      </details>
-      <details class="acc">
-        <summary>9. 书签、文摘、高亮、词典与过滤词</summary>
-        <div class="body">
-          <ul>
-            <li><strong>书签</strong>：阅读区右键“添加书签”，或按 <kbd>F8</kbd> 打开书签列表；列表支持分页、跳转、删除。</li>
-            <li><strong>文摘</strong>：选中文字后右键“添加文摘”；文摘选项卡支持增删改查、分页和导出 txt。</li>
-            <li><strong>高亮</strong>：选中文字右键“高亮”，可在“高亮笔记”里查看；支持清除本章高亮。</li>
-            <li><strong>查词典 / 生词本</strong>：选中文字右键查词典（默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>D</kbd>），生词本默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd>。</li>
-            <li><strong>过滤词</strong>：右键“过滤本段文字”可把广告/站点声明加入过滤规则；以 <code>##</code> 开头可写正则。</li>
-          </ul>
-        </div>
-      </details>
-
-      <details class="acc">
-        <summary>10. 数据、备份、恢复与迁移</summary>
-        <div class="body">
-          <p>所有用户数据都在 <strong>“文档”目录下的 <code>XinYueConfig</code></strong>（如果“文档”被重定向，就在重定向后的位置）。常见文件：</p>
-          <ul>
-            <li><code>YGBH.DB</code>：SQLite 数据库，书架、书签、文摘、阅读位置、书源等。</li>
-            <li><code>option.xml</code>：设置、快捷键、语音参数。</li>
-            <li><code>BookSources.json</code> / <code>BooksSpider.xml</code>：书源配置。</li>
-            <li><code>Backup\</code>：自动/手动备份；<code>log.txt</code> / <code>trace.txt</code>：日志与排错轨迹。</li>
-            <li><code>Speak\</code>、<code>XinYueDownload\</code>、<code>XinYueVoiceSynthesis\</code>：语音、下载、合成缓存。</li>
-          </ul>
-          <p><strong>备份：</strong>文件 → 工具 → 数据备份；程序默认每天自动备份一份。</p>
-          <p><strong>恢复：</strong>选好备份后，按提示关闭程序再重新打开，才会真正换回数据；当前数据会先自动备份一份。</p>
-          <p><strong>迁移到新电脑：</strong>复制整个程序目录 + <code>XinYueConfig</code> 目录；不要只复制 exe。</p>
-        </div>
-      </details>
-
-      <details class="acc">
-        <summary>11. 检查更新与手动升级</summary>
-        <div class="body">
-          <ul>
-            <li>程序启动时会静默检查更新；有新版本会提示。也可以手动执行 <strong>文件/帮助 → 检查更新</strong>。</li>
-            <li>更新读取 <a href="/app/XinYue/UpdateInfo.json">UpdateInfo.json</a>（版本号、更新说明、安装包 MD5），下载后由升级器覆盖程序文件。</li>
-            <li>升级不会动 <code>XinYueConfig</code>，书架和阅读进度会保留。</li>
-            <li>如果自动更新失败：下载最新的 <code>XinYue.zip</code>，解压后覆盖程序目录（保留 <code>XinYueConfig</code> 不动）即可。</li>
-          </ul>
-        </div>
-      </details>
-    </section>
-
-    <section id="hotkeys" aria-labelledby="hotkeys-title">
-      <div class="section-head">
-        <div>
-          <h2 id="hotkeys-title">默认快捷键</h2>
-          <p>默认修饰键是 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>；可在 <strong>设置 → 快捷键</strong> 改成全局或仅程序内，也可以换键。</p>
-        </div>
-      </div>
-      <div class="tablewrap">
-        <table>
-          <thead><tr><th>功能</th><th>默认快捷键</th><th>说明</th></tr></thead>
-          <tbody>
-            <tr><td>开始 / 停止朗读</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>S</kbd></td><td>再按一次停止</td></tr>
-            <tr><td>暂停 / 继续朗读</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd></td><td>暂停后再按继续</td></tr>
-            <tr><td>上一章 / 下一章</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>PageUp</kbd> / <kbd>PageDown</kbd></td><td>加载中会忽略</td></tr>
-            <tr><td>章节列表</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>F7</kbd></td><td>阅读区里直接按 <kbd>F7</kbd> 也可以</td></tr>
-            <tr><td>书签列表</td><td><kbd>F8</kbd></td><td>阅读区里也有效</td></tr>
-            <tr><td>打开设置</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>I</kbd></td><td>切到设置选项卡</td></tr>
-            <tr><td>打开书架 / 书库</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>O</kbd> / <kbd>L</kbd></td><td>切到对应选项卡</td></tr>
-            <tr><td>文摘 / 书签窗口</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>G</kbd> / <kbd>B</kbd></td><td>切到对应选项卡</td></tr>
-            <tr><td>翻译选中 / 当前段落</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Q</kbd> / <kbd>T</kbd></td><td>需要先下载翻译模型</td></tr>
-            <tr><td>查词典 / 生词本 / 高亮笔记</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>D</kbd> / <kbd>V</kbd> / <kbd>H</kbd></td><td>选中文字后使用</td></tr>
-            <tr><td>换源 / 无线传书 / 格式转换</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd> / <kbd>W</kbd> / <kbd>C</kbd></td><td>工具功能</td></tr>
-            <tr><td>打开模型管理</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>M</kbd></td><td>下载语音/翻译模型</td></tr>
-            <tr><td>播放 / 停止背景音乐</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Y</kbd></td><td>—</td></tr>
-            <tr><td>退出程序</td><td><kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Esc</kbd></td><td>会先保存阅读进度</td></tr>
-            <tr><td>切换选项卡</td><td><kbd>Ctrl</kbd>+<kbd>1</kbd>…<kbd>8</kbd>、<kbd>Ctrl</kbd>+<kbd>Tab</kbd></td><td>8 个选项卡顺序切换</td></tr>
-            <tr><td>读屏逐行朗读</td><td>数字键关闭 + 小键盘 <kbd>7</kbd></td><td>争渡等读屏的热键，不是程序自身热键</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-    <section id="faq" aria-labelledby="faq-title">
-      <div class="section-head"><div><h2 id="faq-title">常见问题</h2><p>先看这里；仍然解决不了，把 <code>trace.txt</code> 最后几十行发给作者最快。</p></div></div>
-      <div class="faq">
-        <details><summary>双击 exe 没反应 / 一闪而过</summary><div class="a">先确认托盘里是否已经有“新阅”（单实例，重复启动只会激活旧窗口）。没有的话，检查是否缺少 .NET Framework 4.7.2、是否被杀毒软件拦截；再查看 <code>文档\XinYueConfig\trace.txt</code> 最后几行。</div></details>
-        <details><summary>Windows 提示“已保护你的电脑”</summary><div class="a">程序没有购买商业代码签名证书，SmartScreen 会对新 exe 提示。点“更多信息 → 仍要运行”，并用页面上的 MD5 核对文件。不要从不明来源下载。</div></details>
-        <details><summary>打开书后没有声音</summary><div class="a">先到设置 → 语音设置点“试听”：没声音就换发音人/引擎；自然语音需要联网（Edge 在线）并装好适配器；本地克隆需要先启动模型服务。再检查系统音量、输出设备、程序音量。</div></details>
-        <details><summary>语音引擎里没有“微软自然语音”</summary><div class="a">需要安装 64 位的 NaturalVoiceSAPIAdapter，并在安装器里勾选 Narrator 本地语音 / Edge 在线语音；装完重启本程序。Windows 11 还要先在“讲述人”里下载自然语音包。</div></details>
-        <details><summary>翻译提示“未下载模型”</summary><div class="a">打开 工具 → 模型管理，下载中译英 / 英译中模型。模型是本地文件，下载一次即可离线使用；程序会先检查磁盘和硬件。</div></details>
-        <details><summary>网络小说解析不出章节</summary><div class="a">确认填的是“目录页”而不是某一章；有些站点需要验证码或对爬虫有限制，可以在书库里换一个书源，或稍后重试。解析成功后程序会自动加入书架。</div></details>
-        <details><summary>扫描版 PDF 识别很慢 / 识别不出来</summary><div class="a">第一次要逐页 OCR，页数多时会慢；之后会读 <code>&lt;文件名&gt;.ocr.txt</code> 缓存。扫描太模糊、倾斜严重或手写体时，识别率会下降。</div></details>
-        <details><summary>读屏在阅读区里不能逐行朗读</summary><div class="a">阅读区是原生编辑控件，需要它自己有光标焦点。点一下正文，或按 Tab 把焦点移回阅读框；数字键关闭时按小键盘 7 开始逐行朗读。若焦点被侧栏抢走，按 F7 收起章节列表。</div></details>
-        <details><summary>数据在哪？换电脑怎么迁移？</summary><div class="a">在 <code>文档\XinYueConfig\</code>。迁移时复制整个程序目录和这个配置目录；不要只复制 exe，否则书架和设置会丢。</div></details>
-        <details><summary>GitHub 下载很慢 / 打不开</summary><div class="a">用页面上的 GitHub Raw / 仓库直链 / ghfast 镜像；它们指向同一个文件，MD5 应一致。</div></details>
-      </div>
-    </section>
-
-    <section id="changelog" aria-labelledby="changelog-title">
-      <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="/app/XinYue/UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
-      <div class="notes" id="releaseNotes">新阅 V2.0.6.2
-
-语音设置相关修复（3 项）：
-
-1. 【修复】自然语音改了“语音角色”后，点【试听】还是用原来的角色。
-   原因是内存缓存的 key 漏了发音人（只按文本），换角色后同一句试听文本命中了上一个角色的音频。
-2. 【新增】换“语音角色”时，会用新选中的角色念出它自己的名字（如 Xiaoxiao / Yunxi），方便盲人确认。
-   这段提示不影响【试听】按钮状态；换引擎时不会自己念。
-3. 【修复】按住 ↓ 不放时听不到播报：改成“念完一句再念最新选中”的合并策略
-   （自然语音一次合成要 1~1.5 秒，按固定间隔打断会导致每次都念不出来）。
-
-（本版包含 2.0.6.1 的第三方语音暂停卡死修复、2.0.6.0 的扫描版 PDF 本地 OCR 等全部内容。）</div>
+    <section class="note">
+      <p><strong>关于代码：</strong>文章里的示例我都整理成了可运行版本，覆盖 Python / Node.js / TypeScript / Java / Kotlin / Scala / C# / VB.NET / Go / PHP / Ruby / Perl / Rust / Swift / Dart / C++ / Shell / PowerShell 共 18 种语言，放在 <a href="https://github.com/pstoh/github-xydaili-examples" rel="noopener" target="_blank">github-xydaili-examples</a> 仓库里，每种语言都演示「提取 IP → 走代理访问 → 失败换 IP 重试」这条完整链路。</p>
     </section>
   </div>
 </main>
 
-<footer class="site">
-  <div class="wrap inner">
-    <span>© <span id="year">2026</span> pstoh · 新阅阅读器 XinYueReader</span>
-    <span>
-      <a href="/blog.html">技术笔记</a> ·
-      <a href="https://github.com/pstoh/pstoh.github.io" target="_blank" rel="noopener">GitHub 仓库</a> ·
-      <a href="/app/XinYue/UpdateInfo.json">UpdateInfo.json</a> ·
-      <a href="#main">回到顶部</a>
-    </span>
+<footer class="site-footer">
+  <div class="wrap-wide">
+    <div class="cols">
+      <div>
+        <strong>pstoh 的技术笔记</strong><br>
+        记录后端与数据采集里那些不写下来就会忘的事。
+      </div>
+      <nav class="links" aria-label="页脚导航">
+        <a href="/">首页</a>
+        <a href="/about.html">关于</a>
+        <a href="/feed.xml">RSS 订阅</a>
+        <a href="/sitemap.xml">站点地图</a>
+        <a href="https://github.com/pstoh" rel="noopener" target="_blank">GitHub</a>
+        <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>
+      </nav>
+    </div>
+    <p class="disclaimer">本站是个人技术笔记，文章里的实测数据来自我自己的网络环境，换环境结果可能不同。示例中提到的代理服务为 <a href="https://www.xydaili.net" rel="noopener" target="_blank">星月代理</a>，仅作技术演示，不构成购买建议。</p>
+    <p class="disclaimer">© <span id="y">2026</span> pstoh · 内容采用 <a href="https://creativecommons.org/licenses/by/4.0/" rel="license noopener" target="_blank">CC BY 4.0</a> 许可</p>
   </div>
 </footer>
-
-<script>
-(function () {
-  var fallback = { version: "2.0.6.2", md5: "8F5E6E2F02AB1D16738BA4426F8C7252" };
-
-  function text(id, value) {
-    var el = document.getElementById(id);
-    if (el && value) el.textContent = value;
-  }
-
-  function apply(info) {
-    if (!info) return;
-    var v = info.Version || fallback.version;
-    text("versionText", v);
-    text("versionFact", v);
-    var vers = document.querySelectorAll(".ver");
-    for (var i = 0; i < vers.length; i++) vers[i].textContent = v;
-    text("md5Mini", info.Md5 || fallback.md5);
-    text("md5Full", info.Md5 || fallback.md5);
-    if (info.Text) {
-      var box = document.getElementById("releaseNotes");
-      if (box) box.textContent = String(info.Text).replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
-    }
-  }
-
-  try {
-    fetch("/app/XinYue/UpdateInfo.json", { cache: "no-store" })
-      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(apply)
-      .catch(function () { });
-  } catch (e) { }
-
-  // 安装包大小也实时读一下（发布新包后不用改页面）
-  try {
-    fetch("/app/XinYue/XinYue.zip", { method: "HEAD", cache: "no-store" })
-      .then(function (r) { return r.ok ? r.headers.get("content-length") : null; })
-      .then(function (n) {
-        if (!n) return;
-        var bytes = parseInt(n, 10);
-        if (!bytes || isNaN(bytes)) return;
-        text("sizeFact", bytes.toLocaleString("en-US") + " 字节");
-        var mb = bytes / 1048576;
-        text("sizeText", "约 " + (mb >= 10 ? Math.round(mb) : mb.toFixed(1)) + " MB");
-      })
-      .catch(function () { });
-  } catch (e) { }
-
-  var status = document.getElementById("copyStatus");
-  function setStatus(msg) {
-    if (status) {
-      status.textContent = msg;
-      window.setTimeout(function () { status.textContent = ""; }, 2600);
-    }
-  }
-  var buttons = document.querySelectorAll("button.copy");
-  for (var i = 0; i < buttons.length; i++) {
-    buttons[i].addEventListener("click", function () {
-      var btn = this;
-      var textToCopy = btn.getAttribute("data-copy") || "";
-      function done() {
-        btn.classList.add("done");
-        var old = btn.textContent;
-        btn.textContent = "已复制";
-        setStatus("下载地址已复制到剪贴板。");
-        window.setTimeout(function () { btn.classList.remove("done"); btn.textContent = old; }, 2000);
-      }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(textToCopy).then(done).catch(function () { legacyCopy(textToCopy, done); });
-      } else {
-        legacyCopy(textToCopy, done);
-      }
-    });
-  }
-  function legacyCopy(value, done) {
-    try {
-      var ta = document.createElement("textarea");
-      ta.value = value;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      done();
-    } catch (e) {
-      setStatus("复制失败，请手动选中地址复制。");
-    }
-  }
-
-  var year = document.getElementById("year");
-  if (year) year.textContent = String(new Date().getFullYear());
-})();
-</script>
 </body>
 </html>
