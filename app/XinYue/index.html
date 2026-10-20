@@ -1,4 +1,4 @@
-﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.4</span>（<span id="sizeText">约 36 MB</span>）</span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.5</span>（<span id="sizeText">约 36 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.4</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.5</strong></li>
           <li><span>安装包大小</span><strong id="sizeFact">37,929,836 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">C07AAC384CE743D34CD067B990A4B539</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">32D359ADF7C63A9E402A778FC129E237</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.4</span></span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.5</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">C07AAC384CE743D34CD067B990A4B539</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">32D359ADF7C63A9E402A778FC129E237</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -298,7 +298,7 @@
         </div>
       </div>
       <p class="mini" id="copyStatus" role="status" aria-live="polite"></p>
-      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>C07AAC384CE743D34CD067B990A4B539</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
+      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>32D359ADF7C63A9E402A778FC129E237</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
     </section>
     <section id="guide" aria-labelledby="guide-title">
       <div class="section-head">
@@ -541,16 +541,18 @@
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
       <div class="notes" id="releaseNotes">
-新阅 V2.0.6.4
+新阅 V2.0.6.5
 
-本版重点：翻书音效
+本版重点：翻书音效 + 正在加载音效
 
-1. 【新增】章节正文加载完成后播放一声"翻书音效"（下一章 / 上一章 / 跳转到指定章节都会响），像翻纸质书一样。
-2. 【新增】500ms 内只响一次：快速连按上一章/下一章不会叠音。
-3. 【说明】音效跟随"设置 → 常规设置 → 播放音效"开关，关掉后完全静音。
-4. 【说明】首次打开一本书或启动程序时不响（避免和启动音效重叠）；后台自动预取章节也不会响。
-5. 【说明】音效取自 GitHub 开源翻书音效库（0BSD 许可），已做音量调整，不会盖过朗读声。
-6. 本版包含 2.0.6.3 的阅读位置恢复、打开图书/章节的加载反馈、自然语音预取随机停顿等全部内容。
+1. 【新增】下一章 / 上一章 / 跳转 / 章节列表打开章节 / 书库·书架·最近阅读打开章节：按下就播放翻书音效。
+2. 【新增】数据还在加载时循环播放"正在加载"音效，正文一到阅读框立即停止；快操作最短保留 450ms，避免听不见。
+3. 【优化】正文到达时不再重复响第二声翻书（网络书加载几秒也不会"翻两次"）。
+4. 【调整】程序启动阶段不再播放加载音效；改为窗口显示后打开上次阅读的小说时播放。
+5. 【删除】去掉旧的 over 提示音（Over.wav 资源与全部播放调用已删除）。
+6. 【修复】最近阅读打开图书后阅读框没获取焦点：切回阅读页后再补一次焦点，并在 900ms 后确认。
+7. 音效跟随"设置 → 常规设置 → 播放音效"开关，关掉后完全静音。
+8. 本版包含 2.0.6.4 的翻书音效、2.0.6.3 的阅读位置恢复与打开图书/章节加载反馈等全部内容。
 </div>
     </section>
   </div>
@@ -570,7 +572,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.4", md5: "C07AAC384CE743D34CD067B990A4B539" };
+  var fallback = { version: "2.0.6.5", md5: "32D359ADF7C63A9E402A778FC129E237" };
 
   function text(id, value) {
     var el = document.getElementById(id);
