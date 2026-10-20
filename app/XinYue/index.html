@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="/app/XinYue/XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.2</span>（<span id="sizeText">约 36 MB</span>）</span></a>
+          <a class="btn primary" href="/app/XinYue/XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.3</span>（<span id="sizeText">约 36 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.2</strong></li>
-          <li><span>安装包大小</span><strong id="sizeFact">37,924,195 字节</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.3</strong></li>
+          <li><span>安装包大小</span><strong id="sizeFact">37,929,836 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">8F5E6E2F02AB1D16738BA4426F8C7252</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">4152FB537CBDC056C54FE391EF9F426E</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="/app/XinYue/XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.2</span></span></a>
+          <a class="btn primary" href="/app/XinYue/XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.3</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">8F5E6E2F02AB1D16738BA4426F8C7252</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">4152FB537CBDC056C54FE391EF9F426E</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -298,7 +298,7 @@
         </div>
       </div>
       <p class="mini" id="copyStatus" role="status" aria-live="polite"></p>
-      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>8F5E6E2F02AB1D16738BA4426F8C7252</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
+      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>4152FB537CBDC056C54FE391EF9F426E</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
     </section>
     <section id="guide" aria-labelledby="guide-title">
       <div class="section-head">
@@ -540,18 +540,27 @@
 
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="/app/XinYue/UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
-      <div class="notes" id="releaseNotes">新阅 V2.0.6.2
+      <div class="notes" id="releaseNotes">
+新阅 V2.0.6.3
 
-语音设置相关修复（3 项）：
+阅读位置与打开反馈（本版重点）：
 
-1. 【修复】自然语音改了“语音角色”后，点【试听】还是用原来的角色。
-   原因是内存缓存的 key 漏了发音人（只按文本），换角色后同一句试听文本命中了上一个角色的音频。
-2. 【新增】换“语音角色”时，会用新选中的角色念出它自己的名字（如 Xiaoxiao / Yunxi），方便盲人确认。
-   这段提示不影响【试听】按钮状态；换引擎时不会自己念。
-3. 【修复】按住 ↓ 不放时听不到播报：改成“念完一句再念最新选中”的合并策略
-   （自然语音一次合成要 1~1.5 秒，按固定间隔打断会导致每次都念不出来）。
+1. 【修复】从最近阅读 / 书架 / 书库打开读过的书，回到上次阅读的章节和光标位置。
+2. 【修复】书库 / 书架章节列表选章：选中的是上次阅读的那一章 → 恢复上次光标；选别的章 → 从该章开头读。
+3. 【修复】F7 章节列表打开章节，光标回到开头。
+4. 【优化】打开图书/章节时立刻切到“阅读”选项卡，并显示“正在打开《书名》章节名，请稍候。”。
+5. 【修复】换正文时旧正文回写覆盖新正文，导致“一直停在正在载入”；修复恢复焦点用旧光标覆盖新位置。
+6. 【修复】定时保存不再把“正在载入”提示的位置写进阅读进度。
 
-（本版包含 2.0.6.1 的第三方语音暂停卡死修复、2.0.6.0 的扫描版 PDF 本地 OCR 等全部内容。）</div>
+自然语音朗读：
+
+7. 【优化】合并空行、先合成当前段再预取；预取合成之间随机停顿，降低 Edge 在线语音限流造成的停顿感；预取深度 3 段。
+
+其它：
+
+8. 【修改】帮助 → 官网改为 https://pstoh.github.io/app/XinYue/ ，使用系统默认浏览器打开。
+9. 本版包含 2.0.6.2 的自然语音换角色缓存/播报修复、2.0.6.1 第三方语音暂停卡死修复、2.0.6.0 扫描版 PDF 本地 OCR 等全部内容。
+</div>
     </section>
   </div>
 </main>
@@ -570,7 +579,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.2", md5: "8F5E6E2F02AB1D16738BA4426F8C7252" };
+  var fallback = { version: "2.0.6.3", md5: "4152FB537CBDC056C54FE391EF9F426E" };
 
   function text(id, value) {
     var el = document.getElementById(id);
