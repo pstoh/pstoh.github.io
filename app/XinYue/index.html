@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.16</span>（<span id="sizeText">约 36 MB</span>）</span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.17</span>（<span id="sizeText">约 36 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.16</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.17</strong></li>
           <li><span>安装包大小</span><strong id="sizeFact">37,929,836 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">7701FF4B6E2DC0337142EBEE999607BA</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">65DC8A66647E9D0DC3B26505D19BF725</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.16</span></span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.17</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">7701FF4B6E2DC0337142EBEE999607BA</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">65DC8A66647E9D0DC3B26505D19BF725</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -298,7 +298,7 @@
         </div>
       </div>
       <p class="mini" id="copyStatus" role="status" aria-live="polite"></p>
-      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>7701FF4B6E2DC0337142EBEE999607BA</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
+      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>65DC8A66647E9D0DC3B26505D19BF725</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
     </section>
     <section id="guide" aria-labelledby="guide-title">
       <div class="section-head">
@@ -541,14 +541,14 @@
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
       <div class="notes" id="releaseNotes">
-新阅 V2.0.6.16
+新阅 V2.0.6.17
 
-本版重点：格式转换支持扫描版 PDF
+本版重点：朗读/合成按"句号优先、太长按逗号"拆分
 
-1. 【新增】工具 → 格式转换（Ctrl+Alt+Win+C）现在支持扫描版 PDF → TXT / EPUB：文字层可用的页直接读，缺的页整本识别（已识别过的页直接用缓存，不会重复 OCR）。
-2. 【新增】转换时状态栏实时显示"正在识别扫描页：第 x/y 页"，可点【取消】；取消后已识别的页会写入缓存，下次转换接着用。
-3. 【优化】格式转换改到后台线程，转换大文件时窗口不再卡住；按钮、文件筛选和无障碍名同步更新。
-4. 本版包含 2.0.6.15 的暂停朗读修复与逻辑/健壮性修复、2.0.6.14 的厚扫描本 PDF 逐页识别等全部内容。
+1. 【优化】朗读文本按句号拆句；单句超过 60 字（SAPI5/32 位引擎）或 150 字（自然语音/本地克隆）时按逗号拆开。自然语音/本地克隆只把完整句子合并成 150 字左右的段，不再把整行/长段一口气读完。
+2. 【优化】合成语音、合成全本也按同一规则拆分后逐段合成再拼接，语气更自然、长句不再一口气念完；朗读过的段导出时可直接复用合成缓存。
+3. 【修复】"文件 → 保存为txt文档"在打开扫描版 PDF 时会先整本识别（缓存优先，可取消），不再只保存"第N页"；所有本地格式保存改为一次覆盖写，修掉重复保存内容叠加。
+4. 本版包含 2.0.6.16 的扫描版 PDF 格式转换、2.0.6.15 的暂停朗读修复与逻辑/健壮性修复等全部内容。
 </div>
     </section>
   </div>
@@ -568,7 +568,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.16", md5: "7701FF4B6E2DC0337142EBEE999607BA" };
+  var fallback = { version: "2.0.6.17", md5: "65DC8A66647E9D0DC3B26505D19BF725" };
 
   function text(id, value) {
     var el = document.getElementById(id);
