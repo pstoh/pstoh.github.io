@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.14</span>（<span id="sizeText">约 36 MB</span>）</span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.15</span>（<span id="sizeText">约 36 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.14</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.15</strong></li>
           <li><span>安装包大小</span><strong id="sizeFact">37,929,836 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">5106A92820C6DAD41ADCEEFB8D37BA1A</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">74B1525B97D813BB232B9EF8DE5EEB7C</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.14</span></span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.15</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">5106A92820C6DAD41ADCEEFB8D37BA1A</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">74B1525B97D813BB232B9EF8DE5EEB7C</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -298,7 +298,7 @@
         </div>
       </div>
       <p class="mini" id="copyStatus" role="status" aria-live="polite"></p>
-      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>5106A92820C6DAD41ADCEEFB8D37BA1A</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
+      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>74B1525B97D813BB232B9EF8DE5EEB7C</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
     </section>
     <section id="guide" aria-labelledby="guide-title">
       <div class="section-head">
@@ -541,14 +541,16 @@
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
       <div class="notes" id="releaseNotes">
-新阅 V2.0.6.14
+新阅 V2.0.6.15
 
-本版重点：修复厚扫描本 PDF 只能识别开头几页
+本版重点：修复"暂停朗读后又自己读起来"，并做了一轮健壮性/逻辑修复
 
-1. 【修复】600 多页扫描版 PDF 打开后，后面的页不再一直显示"第N页"：翻到哪一页就即时识别哪一页（通常 1 秒左右）。
-2. 【修复】后台 OCR 每识别完一页就自动补全当前书，不再等整本识别完；当前页被补全时会原地刷新并保持阅读位置。
-3. 【优化】统一"该页是否需要 OCR"的判断（空页 / 只有页码 / 乱码），缓存改为合并写入，避免后台覆盖刚刚识别好的页。
-4. 本版包含 2.0.6.13 的朗读修复（朗读时移动光标、按方向键不再停止朗读）等全部内容。
+1. 【修复】朗读中点右键【暂停朗读】后又会自己接着读（SAPI 暂停被当成"读完"、自然语音暂停超时后续读）：暂停期间不再推进章节，点【继续朗读】正常接上。
+2. 【修复】添加书签在短章/没有换行的正文上报错；查找结果、打开空章节、书架搜索带单引号的书名等崩溃/报错。
+3. 【修复】章节缓存、PDF OCR 缓存、升级器写入改为原子替换，程序异常退出不再留下半截文件。
+4. 【修复】检查更新不再盲信本地旧安装包；书源订阅全部失败后不再 24 小时不重试。
+5. 【修复】全局热键注销残留、窗口句柄未就绪时注册崩溃；翻译缓存并发读写；文件扩展名判断受系统语言影响。
+6. 本版包含 2.0.6.14 的厚扫描本 PDF 逐页识别、2.0.6.13 的朗读修复等全部内容。
 </div>
     </section>
   </div>
@@ -568,7 +570,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.14", md5: "5106A92820C6DAD41ADCEEFB8D37BA1A" };
+  var fallback = { version: "2.0.6.15", md5: "74B1525B97D813BB232B9EF8DE5EEB7C" };
 
   function text(id, value) {
     var el = document.getElementById(id);
