@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.13</span>（<span id="sizeText">约 36 MB</span>）</span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.14</span>（<span id="sizeText">约 36 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.13</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.14</strong></li>
           <li><span>安装包大小</span><strong id="sizeFact">37,929,836 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">6EC8B47D1468E54B00014A3C67F9379F</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">5106A92820C6DAD41ADCEEFB8D37BA1A</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.13</span></span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.14</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">6EC8B47D1468E54B00014A3C67F9379F</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">5106A92820C6DAD41ADCEEFB8D37BA1A</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -298,7 +298,7 @@
         </div>
       </div>
       <p class="mini" id="copyStatus" role="status" aria-live="polite"></p>
-      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>6EC8B47D1468E54B00014A3C67F9379F</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
+      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>5106A92820C6DAD41ADCEEFB8D37BA1A</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
     </section>
     <section id="guide" aria-labelledby="guide-title">
       <div class="section-head">
@@ -531,7 +531,7 @@
         <details><summary>语音引擎里没有“微软自然语音”</summary><div class="a">需要安装 64 位的 NaturalVoiceSAPIAdapter，并在安装器里勾选 Narrator 本地语音 / Edge 在线语音；装完重启本程序。Windows 11 还要先在“讲述人”里下载自然语音包。</div></details>
         <details><summary>翻译提示“未下载模型”</summary><div class="a">打开 工具 → 模型管理，下载中译英 / 英译中模型。模型是本地文件，下载一次即可离线使用；程序会先检查磁盘和硬件。</div></details>
         <details><summary>网络小说解析不出章节</summary><div class="a">确认填的是“目录页”而不是某一章；有些站点需要验证码或对爬虫有限制，可以在书库里换一个书源，或稍后重试。解析成功后程序会自动加入书架。</div></details>
-        <details><summary>扫描版 PDF 识别很慢 / 识别不出来</summary><div class="a">第一次要逐页 OCR，页数多时会慢；之后会读 <code>&lt;文件名&gt;.ocr.txt</code> 缓存。扫描太模糊、倾斜严重或手写体时，识别率会下降。</div></details>
+        <details><summary>扫描版 PDF 识别很慢 / 识别不出来</summary><div class="a">第一次打开要逐页 OCR，页数多时会慢；现在翻到哪一页就即时识别哪一页（约 1 秒），后台也会继续逐页补全，不用重新打开。之后会读 <code>&lt;文件名&gt;.ocr.txt</code> 缓存。扫描太模糊、倾斜严重或手写体时，识别率会下降。</div></details>
         <details><summary>读屏在阅读区里不能逐行朗读</summary><div class="a">阅读区是原生编辑控件，需要它自己有光标焦点。点一下正文，或按 Tab 把焦点移回阅读框；数字键关闭时按小键盘 7 开始逐行朗读。若焦点被侧栏抢走，按 F7 收起章节列表。</div></details>
         <details><summary>数据在哪？换电脑怎么迁移？</summary><div class="a">在 <code>文档\XinYueConfig\</code>。迁移时复制整个程序目录和这个配置目录；不要只复制 exe，否则书架和设置会丢。</div></details>
         <details><summary>GitHub 下载很慢 / 打不开</summary><div class="a">用页面上的 GitHub Raw / 仓库直链 / ghfast 镜像；它们指向同一个文件，MD5 应一致。</div></details>
@@ -541,14 +541,14 @@
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
       <div class="notes" id="releaseNotes">
-新阅 V2.0.6.13
+新阅 V2.0.6.14
 
-本版重点：语音朗读时，光标移动/方向键不再停止朗读
+本版重点：修复厚扫描本 PDF 只能识别开头几页
 
-1. 【修复】程序语音朗读时，逐行/翻章自己移动阅读框光标，不会再触发停止朗读。
-2. 【修复】朗读过程中按方向键/翻页键也不会停止朗读；要停止请用朗读热键或右键菜单。
-3. 保留 2.0.6.12 的读屏修复（检测到读屏软件时自动跳过翻页动画）和自然语音播放超时。
-4. 本版包含 2.0.6.11 的微软本地 OCR / Tesseract 双引擎、PDF 图片识别设置等全部内容。
+1. 【修复】600 多页扫描版 PDF 打开后，后面的页不再一直显示"第N页"：翻到哪一页就即时识别哪一页（通常 1 秒左右）。
+2. 【修复】后台 OCR 每识别完一页就自动补全当前书，不再等整本识别完；当前页被补全时会原地刷新并保持阅读位置。
+3. 【优化】统一"该页是否需要 OCR"的判断（空页 / 只有页码 / 乱码），缓存改为合并写入，避免后台覆盖刚刚识别好的页。
+4. 本版包含 2.0.6.13 的朗读修复（朗读时移动光标、按方向键不再停止朗读）等全部内容。
 </div>
     </section>
   </div>
@@ -568,7 +568,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.13", md5: "6EC8B47D1468E54B00014A3C67F9379F" };
+  var fallback = { version: "2.0.6.14", md5: "5106A92820C6DAD41ADCEEFB8D37BA1A" };
 
   function text(id, value) {
     var el = document.getElementById(id);
