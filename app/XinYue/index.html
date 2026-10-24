@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.17</span>（<span id="sizeText">约 36 MB</span>）</span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.18</span>（<span id="sizeText">约 39 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.17</strong></li>
-          <li><span>安装包大小</span><strong id="sizeFact">37,929,836 字节</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.18</strong></li>
+          <li><span>安装包大小</span><strong id="sizeFact">40,899,528 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">65DC8A66647E9D0DC3B26505D19BF725</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">D45337DE8D30BFC20F398EC8E44FE743</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -246,7 +246,7 @@
       </div>
       <div class="grid">
         <article class="card"><div class="ico" aria-hidden="true">读</div><h3>本地与网络阅读</h3><p>txt、epub、mobi、html、md、fb2、rtf、pdf、chm、doc(x)、zip/rar/7z 打包小说；也支持网络书源与开源阅读 Legado 规则。</p></article>
-        <article class="card"><div class="ico" aria-hidden="true">听</div><h3>三种语音引擎</h3><p>SAPI5（含第三方发音人）、微软自然语音（装适配器后自动出现）、本地克隆语音（用自己的声音朗读）。</p></article>
+        <article class="card"><div class="ico" aria-hidden="true">听</div><h3>五种语音引擎</h3><p>SAPI5（含第三方发音人）、微软自然语音、本地克隆语音（GPT-SoVITS）、Kokoro 本地语音（103 个音色，中英混读）、ZipVoice 克隆语音（5~10 秒录音即可克隆）；后两个模型在【模型管理】里按需下载。</p></article>
         <article class="card"><div class="ico" aria-hidden="true">译</div><h3>离线翻译</h3><p>本地模型中英互译，不依赖在线翻译；支持按段、整章、双语对照，译文有缓存。</p></article>
         <article class="card"><div class="ico" aria-hidden="true">扫</div><h3>扫描版 PDF OCR</h3><p>逐页识别扫描件，和文字层合并；首次识别慢一些，之后直接读缓存。</p></article>
         <article class="card"><div class="ico" aria-hidden="true">源</div><h3>书源管理</h3><p>导入、编辑、测试书源；支持百度/搜狗搜索、换源、章节更新与解析规则。</p></article>
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.17</span></span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.18</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">65DC8A66647E9D0DC3B26505D19BF725</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">D45337DE8D30BFC20F398EC8E44FE743</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -298,7 +298,7 @@
         </div>
       </div>
       <p class="mini" id="copyStatus" role="status" aria-live="polite"></p>
-      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>65DC8A66647E9D0DC3B26505D19BF725</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
+      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>D45337DE8D30BFC20F398EC8E44FE743</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
     </section>
     <section id="guide" aria-labelledby="guide-title">
       <div class="section-head">
@@ -541,14 +541,17 @@
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
       <div class="notes" id="releaseNotes">
-新阅 V2.0.6.17
+新阅 V2.0.6.18
 
-本版重点：朗读/合成按"句号优先、太长按逗号"拆分
+本版重点：新增两个本地大模型语音引擎（Kokoro / ZipVoice），模型在【模型管理】里按需下载
 
-1. 【优化】朗读文本按句号拆句；单句超过 60 字（SAPI5/32 位引擎）或 150 字（自然语音/本地克隆）时按逗号拆开。自然语音/本地克隆只把完整句子合并成 150 字左右的段，不再把整行/长段一口气读完。
-2. 【优化】合成语音、合成全本也按同一规则拆分后逐段合成再拼接，语气更自然、长句不再一口气念完；朗读过的段导出时可直接复用合成缓存。
-3. 【修复】"文件 → 保存为txt文档"在打开扫描版 PDF 时会先整本识别（缓存优先，可取消），不再只保存"第N页"；所有本地格式保存改为一次覆盖写，修掉重复保存内容叠加。
-4. 本版包含 2.0.6.16 的扫描版 PDF 格式转换、2.0.6.15 的暂停朗读修复与逻辑/健壮性修复等全部内容。
+1. 【新增】Kokoro 本地语音：103 个音色（中文女声 55、中文男声 45、英文 3），中英混读、纯 CPU、完全离线；下载约 140MB，解压约 205MB。
+2. 【新增】ZipVoice 克隆语音：给一段 5~10 秒录音和同一句话的参考文本，就能用你的音色读整本书；下载约 156MB，解压约 196MB，速度比 Kokoro 快约 3 倍。
+3. 【模型管理】新增两行"语音模型"，可分别下载、删除、看进度；下载前自动检查磁盘空间，走国内可用镜像（gh-proxy.com，失败自动换镜像/直连），带完整性校验（断线、半截包、镜像返回网页都会被识别并重下）。
+4. 【修复】模型下载/安装的健壮性：安装脚本结束会自动恢复按钮（以前会一直禁用）；下载成功/删除模型后"语音引擎"下拉会同步增删；32 位版不再允许下载这套 64 位专用模型。
+5. 【修复】本地讲述人自然语音的状态显示：区分"本地 / 在线"发音人；本地为 0 时直接提示"商店新版语音包适配器读不了，要用旧版 MSIX 并设置 NarratorVoicePath"。
+6. 说明：以上两个本地语音引擎只在 64 位版提供（需要程序目录下的 Lib\sherpa 运行库）；32 位版仍可用 SAPI5 / 自然语音 / 本地克隆。
+7. 本版包含 2.0.6.17 的"朗读/合成按句号优先拆分"及更早版本的全部修复。
 </div>
     </section>
   </div>
@@ -568,7 +571,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.17", md5: "65DC8A66647E9D0DC3B26505D19BF725" };
+  var fallback = { version: "2.0.6.18", md5: "D45337DE8D30BFC20F398EC8E44FE743" };
 
   function text(id, value) {
     var el = document.getElementById(id);
