@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.20</span>（<span id="sizeText">约 39 MB</span>）</span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.21</span>（<span id="sizeText">约 40 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.20</strong></li>
-          <li><span>安装包大小</span><strong id="sizeFact">40,901,536 字节</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.21</strong></li>
+          <li><span>安装包大小</span><strong id="sizeFact">42,359,513 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">85551E3F7256DAD060584C82EC40EA6C</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">7FE2738763B616AF1FFB4ECBC246B600</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.20</span></span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.21</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">85551E3F7256DAD060584C82EC40EA6C</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">7FE2738763B616AF1FFB4ECBC246B600</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -298,7 +298,7 @@
         </div>
       </div>
       <p class="mini" id="copyStatus" role="status" aria-live="polite"></p>
-      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>85551E3F7256DAD060584C82EC40EA6C</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
+      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>7FE2738763B616AF1FFB4ECBC246B600</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
     </section>
     <section id="guide" aria-labelledby="guide-title">
       <div class="section-head">
@@ -541,18 +541,22 @@
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
       <div class="notes" id="releaseNotes">
-新阅 V2.0.6.20
+新阅 V2.0.6.21
 
-本版重点：背景音乐功能重写（无缝循环、文件夹播放列表、实时音量）
+本版重点：网络书源解析更稳（正文兜底 / 目录兜底），搜索结果更干净
 
-1. 【新增】背景音乐路径现在可以是一个文件，也可以是一个文件夹：文件夹里的音频按文件名顺序循环播放，播完自动下一首、最后一首回到开头。
-2. 【优化】单曲循环改成真正的无缝循环（BASS 循环标志），不再有每轮 1 秒多的空白；切歌改用 BASS 结束事件，间隙很小。
-3. 【优化】支持格式放宽：自动加载 BASS 插件，除 mp3/wav 外还支持 flac / ogg / opus / m4a / aac / wma / ape / wv / midi 等。
-4. 【新增】起播 350ms 淡入、停止 300ms 淡出；音量条拖动**立即生效**，不用重新播放。
-5. 【新增】"朗读时自动压低背景音乐"（默认开启，可在 设置 → 常规设置 关掉）：开始朗读时降到 35%，停止朗读后恢复，不改你设置的音量值。
-6. 【新增】背景音乐跟随"输出设备"设置；换设备后按新设备重开；退出程序时自动停止，不再和退出音效叠在一起。
-7. 【修复】旧实现的后台轮询导致：停止后可能被后台线程重新播放（按热键停不下来）、每次播放泄漏一个音频流、.flac/.ogg 放不出来。
-8. 本版包含 2.0.6.19 的"打开合成语音窗口不再播放加载音效"及更早版本的全部修复。
+1. 【新增】正文提取兜底：接入 SmartReader（Mozilla Readability 的 C# 移植）。书源规则写错、站点改版、
+   正文容器没有 class 时，只有"现有正文明显不合格"才会用 Readability 再从整页挑一次，
+   并且候选必须更长、导航垃圾更少才替换 —— 只会变好，不会把完整长正文换掉。
+2. 【新增】目录（章节列表）兜底：从整页链接里按"URL 形态聚类 + 标题像不像章节 + 编号是否单调"打分挑目录，
+   自动按章节号排序（支持"第一二零回"这类中文数字）。
+   实测：762pk 1471 章完整目录；sdmz《红楼梦》120 回顺序正确；du2du 选中真目录而不是推荐书单；
+   只有推荐位/问答的页面会拒绝替换（宁可不动原结果）。
+3. 【优化】搜索结果过滤：去掉视频（播放页/在线观看）、百度 AI 智能回答、百科/知道/贴吧/知乎、
+   相关搜索、好看视频/秒懂百科等结果；百度、搜狗、必应三处搜索都生效。标题里只是"简介提到视频"的正常书页不会误伤。
+4. 【工程】BookSpider 目标框架升到 .NET Framework 4.7.2（为了引用 netstandard2.0 的 SmartReader）；
+   安装包增加约 3MB 依赖（Lib\SmartReader，共 13 个 DLL）。
+5. 本版包含 2.0.6.20 的背景音乐重写及更早版本的全部修复。
 </div>
     </section>
   </div>
@@ -572,7 +576,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.20", md5: "85551E3F7256DAD060584C82EC40EA6C" };
+  var fallback = { version: "2.0.6.21", md5: "7FE2738763B616AF1FFB4ECBC246B600" };
 
   function text(id, value) {
     var el = document.getElementById(id);
