@@ -311,21 +311,32 @@
       <details class="acc" open>
         <summary>1. 安装、首次启动与卸载</summary>
         <div class="body">
-          <h4>安装（绿色版）</h4>
-          <ol>
-            <li>把 <code>XinYue.zip</code> 解压到一个<strong>固定目录</strong>，例如 <code>D:\XinYueReader</code>。不要放在桌面、下载目录或临时目录，升级时容易被清理。</li>
-            <li>双击 <code>XinYueReader.exe</code>。程序是 64 位，需要 <strong>.NET Framework 4.7.2</strong>（Windows 10 1803+ / Windows 11 通常自带；Win7/8 需要先安装运行库）。</li>
-            <li>如果 Windows 弹出 SmartScreen“Windows 已保护你的电脑”，点“更多信息 → 仍要运行”。程序未做商业代码签名，这是正常提示；请用上面的 MD5 确认文件完整。</li>
-          </ol>
-          <h4>首次启动</h4>
+          <h4>运行环境</h4>
           <ul>
-            <li>程序会在 <code>文档\XinYueConfig\</code> 建立数据库和配置；如果你的“文档”被重定向（例如 D 盘），数据就在那个位置。</li>
-            <li>启动后会自动打开上次阅读的书和章节；焦点会尽量落到阅读框。若焦点不在阅读框，按 <kbd>Tab</kbd> 或点击正文即可。</li>
-            <li>程序是单实例：已经在运行时再次双击，只会把已有窗口叫出来，不会开第二个。</li>
+            <li>本版是 <strong>64 位</strong>程序（<code>Release\X64</code>），需要 <strong>.NET Framework 4.7.2</strong>。Windows 10 1803 以上 / Windows 11 一般自带；Win7 / Win8 需要先装 4.7.2 运行库（不装的话双击 exe 会“一闪而过”或提示缺少 .NET）。</li>
+            <li>不需要安装数据库、不需要联网也能读本地小说；联网只用于书库搜索、检查更新、Edge 在线语音。</li>
           </ul>
-          <h4>卸载</h4>
+          <h4>安装（绿色版，解压即用）</h4>
+          <ol>
+            <li>把 <code>XinYue.zip</code> 解压到一个<strong>固定目录</strong>，例如 <code>D:\XinYueReader</code>。不要放在桌面、下载目录、临时目录或 <code>C:\Program Files</code>（没有写权限，升级/自愈会失败）。</li>
+            <li>确认解压出来的目录里有：<code>XinYueReader.exe</code>、<code>Update\Update.exe</code>、<code>Resource\</code>、一大堆 <code>.dll</code>。少了 <code>Update\</code> 升级会失败。</li>
+            <li>双击 <code>XinYueReader.exe</code>。首次启动会：建数据库 → 检查更新 → 播放启动音效 → 打开上次阅读的书（首次没有则停在阅读页）。</li>
+            <li>Windows 弹出 SmartScreen“Windows 已保护你的电脑”属正常（未做商业签名）：“更多信息 → 仍要运行”，并用本页 MD5 核对文件。</li>
+            <li>如果杀毒软件把 <code>XinYueReader.exe</code> 或 <code>zdsr</code> 目录拦了，把程序目录加进排除项；否则可能出现“读屏念不出正文”之类的怪现象。</li>
+          </ol>
+          <h4>首次启动你会看到</h4>
           <ul>
-            <li>关闭程序，删除程序目录即可。若要彻底清除数据，再删除 <code>文档\XinYueConfig\</code>（<strong>删除后书架、书签、文摘、阅读进度都会消失</strong>，请先备份）。</li>
+            <li>主界面是 <strong>8 个选项卡</strong>（见第 2 节），默认停在“阅读”。</li>
+            <li>数据目录建在 <strong>“文档” → <code>XinYueConfig</code></strong>（“文档”被重定向到 D 盘时就在 D 盘），见第 10 节。</li>
+            <li>右下角/托盘出现“新阅”图标。<strong>点窗口右上角 × 只是隐藏到托盘</strong>，程序还在跑（朗读/自动翻章会继续）。</li>
+            <li>真正退出：托盘图标右键 →“退出(E)”，或按已设的“退出程序”快捷键（默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Esc</kbd>）。</li>
+            <li>程序是<strong>单实例</strong>：已在运行时再双击 exe，只会把已有窗口叫到前台，不会开第二个；所以“双击没反应”先看托盘。</li>
+          </ul>
+          <h4>卸载 / 重置</h4>
+          <ul>
+            <li>卸载：退出程序（托盘 → 退出）→ 删除程序目录。</li>
+            <li>重置设置但保留书：只删 <code>文档\XinYueConfig\option.xml</code>。</li>
+            <li>彻底清空：再删 <code>文档\XinYueConfig\</code>（<strong>书架、书签、文摘、阅读进度、书源全部消失</strong>，请先备份，见第 10 节）。</li>
           </ul>
         </div>
       </details>
@@ -333,31 +344,52 @@
       <details class="acc">
         <summary>2. 主界面：8 个选项卡</summary>
         <div class="body">
-          <p>主界面用选项卡组织，<kbd>Ctrl</kbd>+<kbd>1</kbd>…<kbd>8</kbd> 可直接切换，<kbd>Ctrl</kbd>+<kbd>Tab</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd> 循环切换。</p>
+          <p>切换方式：<kbd>Ctrl</kbd>+<kbd>1</kbd>…<kbd>8</kbd> 直选；<kbd>Ctrl</kbd>+<kbd>Tab</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd> 循环；焦点在<strong>选项卡表头</strong>时用 <kbd>←</kbd> / <kbd>→</kbd> 换页，<kbd>Tab</kbd> 进入该页内容。</p>
           <div class="tablewrap"><table>
-            <thead><tr><th>选项卡</th><th>用途</th></tr></thead>
+            <thead><tr><th>选项卡</th><th>里面有什么 / 怎么用</th></tr></thead>
             <tbody>
-              <tr><td>阅读</td><td>正文、书签侧栏、章节目录、上一章/下一章/跳转、字号与排版。</td></tr>
-              <tr><td>书库</td><td>按书源搜索网络小说、查看分类、解析章节、打开网络小说。</td></tr>
-              <tr><td>书架</td><td>已收藏的书；可导入本地图书、打开章节、删除、批量管理。</td></tr>
-              <tr><td>最近阅读</td><td>按阅读时间排序，回车继续上次的章节和光标位置。</td></tr>
-              <tr><td>文摘</td><td>摘录列表，分页展示，支持增删改查和导出。</td></tr>
-              <tr><td>书签</td><td>书签列表，支持跳转、删除、批量操作。</td></tr>
-              <tr><td>翻译</td><td>整段/整章翻译、双语对照、翻译缓存。</td></tr>
-              <tr><td>设置</td><td>常规、语音、阅读排版、快捷键、模型管理等。</td></tr>
+              <tr><td>阅读</td><td>左侧书签卡片（可隐藏）、中间正文、右侧章节卡片（可隐藏）、底部翻页栏（上一章 / 第 N 章数字框 / 跳转 / 下一章）。打开书、换章之后焦点会自动回到正文。</td></tr>
+              <tr><td>书库</td><td>选书源 → 输入书名搜索 → 结果列表里回车打开；支持“搜索并解析章节”“管理书源”“导入开源阅读书源”。</td></tr>
+              <tr><td>书架</td><td>已收藏的书。回车打开（回到上次章节与光标），右键导入/删除/查看信息；列表支持分页。</td></tr>
+              <tr><td>最近阅读</td><td>按阅读时间倒序，最多显示 <strong>最近 20 本</strong>；回车继续上次的位置。</td></tr>
+              <tr><td>文摘</td><td>摘录列表，分页；支持新增、修改、删除、导出。</td></tr>
+              <tr><td>书签</td><td>当前书的书签列表，分页；支持跳转、删除；“添加书签”复用阅读区右键那套动作。</td></tr>
+              <tr><td>翻译</td><td>输入/粘贴文本翻译、整段翻译、双语对照；模型在本地跑（见第 7 节）。</td></tr>
+              <tr><td>设置</td><td>常规、语音、阅读排版、快捷键、模型管理、PDF 识别引擎。改完立刻生效，不需要重启。</td></tr>
             </tbody>
           </table></div>
+          <p class="mini">提示：从书库 / 书架 / 最近阅读打开图书或章节后，程序会<strong>自动切到“阅读”页并把焦点放进正文</strong>，可直接按 <kbd>7</kbd>（读屏）或 <kbd>↑</kbd>/<kbd>↓</kbd> 开始读。</p>
         </div>
       </details>
 
       <details class="acc">
         <summary>3. 打开本地小说</summary>
         <div class="body">
+          <h4>支持格式</h4>
           <ul>
-            <li>主菜单 <strong>文件 → 打开</strong>，选择 txt / epub / mobi / html / md / fb2 / rtf / pdf / chm / doc(x) / zip / rar / 7z 等文件。</li>
-            <li>批量加书：在<strong>书架</strong>的图书列表里右键 → <strong>导入</strong>，可一次选多个文件。导入后会解析目录并加入书架。</li>
-            <li>压缩包小说会先解压/读取内部文本；PDF 若没有文字层，程序会提示或自动走本地 OCR（见第 8 节）。</li>
-            <li>txt 编码识别失败出现乱码时，换一个编码正确的版本，或在书架里重新导入；程序会尽量自动识别 UTF-8 / GBK。</li>
+            <li>纯文本：<code>txt</code>（自动识别 UTF-8 / GBK / UTF-16）；</li>
+            <li>电子书：<code>epub</code>、<code>mobi</code>、<code>azw3</code>、<code>fb2</code>、<code>html/htm</code>、<code>md</code>、<code>rtf</code>；</li>
+            <li>办公文档：<code>doc</code>、<code>docx</code>、<code>pdf</code>（有文字层的直接读；扫描版见第 8 节）；</li>
+            <li>压缩包：<code>zip</code>、<code>rar</code>、<code>7z</code>（内部单个 txt/html 自动取出）；</li>
+            <li>其它：<code>chm</code>、<code>umd</code> 等（取不到正文时会提示）。</li>
+          </ul>
+          <h4>三种打开方式</h4>
+          <ol>
+            <li><strong>文件 → 打开</strong>：选单个文件，直接读，同时加入书架。</li>
+            <li><strong>书架 → 右键 → 导入</strong>：一次选多个文件批量导入，导入后统一解析目录。</li>
+            <li><strong>命令行</strong>：<code>XinYueReader.exe "D:\书\某本书.txt"</code>（程序已在运行时会把窗口叫出来并打开这本书）。</li>
+          </ol>
+          <h4>目录（章节）是怎么来的</h4>
+          <ul>
+            <li>txt/epub 优先用文件自带目录；txt 没有目录时按“第X章 / 第X节 / 楔子 / 序章”等规则切分。</li>
+            <li>规则都不匹配时走“通用启发式”：<strong>没有识别出目录</strong>的书会按每 3000 字左右自动切块，保证能翻页。</li>
+            <li>章节数不对（太少/太多）时：换一个带目录的版本，或用 <strong>工具 → 格式转换</strong> 重新生成，再重新导入。</li>
+          </ul>
+          <h4>常见问题</h4>
+          <ul>
+            <li><strong>乱码</strong>：换一个编码正确的文件；程序会尽量猜，但 GB18030 之外的冷门编码可能猜错。</li>
+            <li><strong>扫描版 PDF</strong>：没有文字层的页面会自动走本地 OCR（第 8 节），可用 <strong>文件 → 保存为 TXT</strong> 把识别结果导出。</li>
+            <li><strong>打不开/提示格式不支持</strong>：先用别的阅读器确认文件本身没坏；仍不行就把文件名和提示文字发给作者。</li>
           </ul>
         </div>
       </details>
@@ -365,19 +397,31 @@
       <details class="acc">
         <summary>4. 打开网络小说、书库与书源</summary>
         <div class="body">
-          <h4>从网址打开</h4>
+          <h4>方式一：文件 → 打开网络小说</h4>
           <ol>
-            <li>主菜单 <strong>文件 → 打开网络小说</strong>。</li>
-            <li>填写书名、目录页网址，选择图书类型，点确定。</li>
-            <li>程序会解析章节；成功后焦点会到章节列表，选一章即可开始阅读，并把书加入书架。</li>
-            <li>解析失败时会提示原因；可以检查网址是否是目录页、站点是否需要验证码，或换一个书源。</li>
+            <li>填<strong>书名</strong>（用于书架显示）、<strong>目录页网址</strong>（注意：是“目录/章节目录”页，不是某一章的正文页）、选<strong>图书类型</strong>。</li>
+            <li>确定后程序解析章节；<strong>成功</strong>会自动加入书架、焦点跳到章节列表，选一章即可开始读。</li>
+            <li><strong>失败</strong>会提示原因（不是目录页 / 需要验证码 / 没有匹配规则）。可换一个目录页网址，或改用书库搜索。</li>
           </ol>
-          <h4>在书库里搜索</h4>
+          <h4>方式二：书库搜索</h4>
           <ul>
-            <li><strong>书库</strong>选项卡选择书源（百度搜索 / 搜狗搜索 / 自定义书源），输入关键词搜索。</li>
-            <li>百度/搜狗搜索会调用内置浏览器；如果出现验证码，请先在浏览器里完成验证，再回到程序重试。</li>
-            <li>支持导入开源阅读（Legado）书源：<strong>书库 → 管理书源 → 导入</strong>；导入后可测试、编辑、启用/停用。</li>
-            <li>读到一半发现书源失效，可用 <strong>换源</strong>（默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd>）从其他书源继续。</li>
+            <li><strong>书库 → 选书源 → 输入书名 → 搜索</strong>。内置“百度搜索 / 搜狗搜索”，也支持自定义与导入的 Legado 书源。</li>
+            <li>百度走的是<strong>高级搜索</strong>（书名放“完整关键词”，不手工拼 <code>site:</code>、<code>-新闻</code> 这类运算符）；结果不足 5 条时会自动换说法再搜（全文阅读 → 最新章节 → 无弹窗）。</li>
+            <li>结果里的视频、AI 智能回答、百科、问答、站点搜索页会被自动过滤掉，尽量只留“能读的书页”。</li>
+            <li>出现<strong>验证码</strong>：程序会改用内置浏览器（Chromium）打开，你在里面手动过验证，再回程序重试。频繁触发就隔几分钟、或换搜狗/别的书源。</li>
+            <li>选中一本书可以“<strong>搜索并解析章节</strong>”：直接拿到章节表并加入书架（这一步比较贵，只在你按的时候做）。</li>
+          </ul>
+          <h4>书源管理</h4>
+          <ul>
+            <li><strong>书库 → 管理书源</strong>：可新增、编辑、测试、启用/停用、删除、导入/导出。</li>
+            <li>支持<strong>开源阅读（Legado）书源</strong>的解析规则：导入 json 后填好站点地址即可；规则里的 CSS 选择器 / 正则都能用。</li>
+            <li>某个书源突然失效（站点改版、被墙）：用 <strong>换源</strong>（默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd>）在同一本书上换一个书源继续读，阅读进度会按章节名对齐。</li>
+          </ul>
+          <h4>缓存与预取</h4>
+          <ul>
+            <li>读到某一章时，后台会<strong>预取后面 5 章</strong>正文（间隔约 12 秒），翻下一章基本不用等。</li>
+            <li>读屏逐行朗读时如果“读到章尾自动翻章”没触发，先确认设置里“自动翻页”是开着的（默认开）。</li>
+            <li>章节正文取不到（站点需要登录/验证码/正文在图片里）时会重试几次，仍失败就提示；这类站点建议换源。</li>
           </ul>
         </div>
       </details>
@@ -385,42 +429,81 @@
       <details class="acc">
         <summary>5. 阅读操作：翻章、跳转、查找、排版</summary>
         <div class="body">
+          <h4>翻章</h4>
           <ul>
-            <li><kbd>F7</kbd> 打开/收起章节列表；<kbd>F8</kbd> 打开/收起书签列表。焦点在阅读区时也有效。</li>
-            <li>底部“第 N 章，共 M 章”数字框：<kbd>↑</kbd> 值 +1、<kbd>↓</kbd> 值 −1，<kbd>Enter</kbd> 跳转。</li>
-            <li><strong>上一章 / 下一章 / 跳转</strong>按钮；加载期间按钮会自动禁用，避免连点。</li>
-            <li>阅读区按 <kbd>Tab</kbd>：优先跳到“下一章”按钮；没有下一章时跳到选项卡表头。<kbd>Shift</kbd>+<kbd>Tab</kbd> 反向。</li>
-            <li>右键正文：开始/暂停/停止朗读、添加书签、添加文摘、过滤本段、查词典、高亮、全选、复制。</li>
-            <li>正文内查找：按用户要求主界面没有单独的查找框；可使用读屏软件自带的查找功能，或通过 F7 章节目录定位。</li>
-            <li>排版：<strong>设置 → 阅读设置</strong>可调字体、字号、加粗、行距、段距、首行缩进、页边距、自动换行；也可用工具菜单的自动滚动和朗读定时。</li>
-            <li>从书架/书库/最近阅读打开图书时，会回到<strong>上次阅读的章节和光标位置</strong>；在章节列表里<strong>明确选另一章</strong>则从该章开头读。</li>
+            <li>底部翻页栏：<strong>上一章 / 下一章 / 跳转</strong>；正在加载章节数据时这三个按钮会自动禁用，避免连点导致错乱。</li>
+            <li><strong>第 N 章，共 M 章</strong>数字框：<kbd>↑</kbd> 值 +1、<kbd>↓</kbd> 值 −1（只改数字，不跳），<kbd>Enter</kbd> 才跳转。直接键入数字会整体替换旧值。</li>
+            <li><kbd>F7</kbd> 打开/收起章节列表（左侧），在列表里回车即打开该章；<kbd>F8</kbd> 同理是书签列表。</li>
+            <li><strong>自动翻页</strong>（设置 → 阅读设置，默认开）：光标停在最后一行（或最后一行行首不动一会儿）会<strong>自动进下一章</strong>；读屏逐行朗读就靠它连续读下去。</li>
+            <li><strong>自动滚动</strong>（工具 → 自动滚动）：每 N 秒往下滚一行，可设“到本章末尾就停”或继续滚下一章。</li>
+          </ul>
+          <h4>跳转与查找</h4>
+          <ul>
+            <li>章节目录里的页码框同样支持 <kbd>↑</kbd>/<kbd>↓</kbd> 改页码、<kbd>Enter</kbd> 跳页（书库、书架、书签列表的分页框也一样）。</li>
+            <li>主界面没有单独的“查找框”（按你的要求去掉了）：查找请用读屏软件自带的查找，或 <kbd>F7</kbd> 在目录里定位。</li>
+            <li>书签 / 高亮笔记里的“跳转”会把光标放回保存的位置，并自动切回“阅读”页。</li>
+          </ul>
+          <h4>键盘顺序（焦点链）</h4>
+          <p>阅读页里 <kbd>Tab</kbd> 的顺序是：<strong>正文 → 下一章 → 章节数字框 → 跳转 → 选项卡表头 → 正文</strong>；<kbd>Shift</kbd>+<kbd>Tab</kbd> 反向。没有“下一章”时（最后一章等）直接从正文落到表头。</p>
+          <h4>右键菜单（在正文里按右键 / 读屏的上下文菜单键）</h4>
+          <ul>
+            <li><strong>开始朗读 / 暂停朗读（继续朗读）/ 停止朗读</strong>；</li>
+            <li><strong>添加书签、添加文摘、过滤本段文字</strong>（过滤词支持 <code>##</code> 开头的正则）；</li>
+            <li><strong>查词典、高亮、清除本章高亮、全选、复制</strong>。</li>
+          </ul>
+          <h4>阅读进度</h4>
+          <ul>
+            <li>每 60 秒自动保存一次（也保存在退出/关窗口时）；重开这本书会回到<strong>上次的章节和光标位置</strong>。</li>
+            <li>在章节列表里<strong>明确选了另一章</strong>，就从那一章开头读；同一章则沿用上次位置。</li>
+            <li>“最近阅读”按阅读时间排序，最多显示最近 20 本。</li>
+          </ul>
+          <h4>排版与字体</h4>
+          <ul>
+            <li><strong>设置 → 阅读设置</strong>：字体、字号、加粗、行距（1~2 倍）、段间距、首行缩进、页边距、自动换行、翻页动画。</li>
+            <li>改完<strong>立刻生效</strong>，不用重启；关掉“自动换行”时一行就是一段（适合横向滚动着读）。</li>
+            <li>翻页动画对读屏用户会自动跳过（避免遮罩挡住朗读），也可以在设置里直接关掉。</li>
           </ul>
         </div>
       </details>
 
       <details class="acc">
-        <summary>6. 语音朗读：SAPI5、自然语音、本地克隆</summary>
+        <summary>6. 语音朗读：SAPI5、自然语音、本地模型</summary>
         <div class="body">
-          <h4>选择引擎</h4>
-          <p>打开 <strong>设置 → 语音设置</strong>，在“语音引擎”里选择：</p>
+          <h4>先选引擎（设置 → 语音设置）</h4>
+          <div class="tablewrap"><table>
+            <thead><tr><th>引擎</th><th>适合谁 / 需要什么</th><th>是否联网</th></tr></thead>
+            <tbody>
+              <tr><td>SAPI5.0</td><td>首选、最省事：用系统里的发音人（慧慧、Zira，以及你装过的第三方 SAPI5 发音人）。</td><td>离线</td></tr>
+              <tr><td>微软自然语音</td><td>想听“晓晓/云希”这类自然语音：需要装 NaturalVoiceSAPIAdapter（设置页有一键安装）。<strong>Narrator 本地语音</strong>离线可用；<strong>Edge 在线语音</strong>需要联网。</td><td>部分</td></tr>
+              <tr><td>本地克隆语音 / Kokoro / ZipVoice</td><td>想用自己的声音或更好的本地模型：先在<strong>工具 → 模型管理</strong>下载，克隆语音还要选 5 秒~1 分钟的参考音频（说 10 字以上中文最好）。</td><td>离线（首次下载要网）</td></tr>
+            </tbody>
+          </table></div>
+          <h4>发音人与音色参数</h4>
           <ul>
-            <li><strong>SAPI5.0</strong>：系统自带语音（如慧慧、Zira），也支持第三方 SAPI5 发音人。右侧“语音角色”列出系统里所有可用角色。</li>
-            <li><strong>微软自然语音</strong>：需要先安装 NaturalVoiceSAPIAdapter。设置页有“安装自然语音(_V)”一键安装；装完重启程序。它会把 Windows 讲述人的自然语音（晓晓、云希、Aria 等）和 Edge 在线语音暴露给 SAPI5。</li>
-            <li><strong>本地克隆语音</strong>：先在模型管理里下载 GPT-SoVITS 引擎，再选择 5 秒~1 分钟的参考音频（说 10 字以上中文最好）。适合想用自己的声音朗读的用户。</li>
+            <li>“语音角色”下拉框会列出当前引擎可用的发音人；<strong>选什么就用什么</strong>（不会偷偷换别的）。</li>
+            <li>语速 / 音量 / 音高：滑块调节；“输出设备”可以指定用哪个声卡/耳机（不跟随系统默认）。</li>
+            <li>左侧有个“试听”按钮：先用一句话确认音色与音量，再开始读整章。试听用的是当前所选角色。</li>
           </ul>
           <h4>朗读操作</h4>
           <ul>
-            <li>默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>S</kbd> 开始/停止朗读；<kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd> 暂停/继续。可在设置 → 快捷键里改成全局或程序内。</li>
-            <li>朗读时按“段”推进：程序会把正文合并成约 150 字的段，整段合成后连续播放，减少段与段之间的空档。</li>
-            <li>试听：在语音设置里点“试听”，确认发音人、语速、音量正常后再开始朗读。</li>
-            <li>读屏逐行朗读：关闭数字键（NumLock 关），按小键盘 <kbd>7</kbd>；光标在哪就从哪开始，读完一行继续下一行。</li>
-            <li>睡眠定时 / 读完本章停止：在工具菜单里设置，适合睡前听书。</li>
+            <li>开始/停止：默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>S</kbd>；暂停/继续：<kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd>（都可在设置 → 快捷键里改成全局或仅程序内）。</li>
+            <li>朗读从<strong>当前光标位置</strong>开始，逐段推进（程序会把正文按句号/逗号拆成合适的段再合成，减少卡顿）。</li>
+            <li>读完本章会<strong>自动读下一章</strong>；想只读一章就停：勾“读完本章就停”。</li>
+            <li>睡眠定时：工具 → 朗读定时（例如 30 分钟），到点自动停止。</li>
+            <li>朗读时阅读框光标会跟着走，方便你随时接着看；<strong>暂停</strong>只是暂时不出声，<strong>停止</strong>才是结束本次朗读。</li>
           </ul>
           <h4>合成到文件</h4>
           <ul>
-            <li><strong>工具 → 合成语音</strong>：把一章合成一个 wav；<strong>合成全本小说</strong>：合并 txt 或逐章 wav，可续跑、失败重试。</li>
-            <li>自然语音取决于所选角色：Edge 在线语音需要联网，Narrator 本地语音不需要；本地克隆和 SAPI5 可离线。</li>
+            <li><strong>工具 → 合成语音</strong>：把当前章合成为 wav；<strong>合成全本小说</strong>：整本逐章合成，可续跑、失败重试。</li>
+            <li>合成用的引擎/发音人与“语音设置”里选的一致；本地模型合成更慢但可离线。</li>
           </ul>
+          <h4>没声音怎么查</h4>
+          <ol>
+            <li>先在语音设置里点<strong>试听</strong>：没声音 → 换发音人 / 换引擎 / 换输出设备；</li>
+            <li>自然语音：确认适配器已安装、角色是“Microsoft 晓晓/云希”这类；Edge 在线语音要联网，网络差会失败并提示；</li>
+            <li>本地克隆：确认模型已下载、参考音频能播放、参考文本与音频内容一致（不一致会念错或只念几个字）；</li>
+            <li>都不行就看 <code>文档\XinYueConfig\log.txt</code> 的最后几行（会写清楚是哪个引擎、什么错误）。</li>
+          </ol>
         </div>
       </details>
 
@@ -428,11 +511,11 @@
         <summary>7. 翻译：本地模型中英互译</summary>
         <div class="body">
           <ul>
-            <li>先在 <strong>工具 → 模型管理</strong> 下载翻译模型（中译英 / 英译中，opus-mt）。模型完全在本地运行，不上传正文。</li>
-            <li>没下载模型就使用翻译，程序会提示你先下载，不会静默失败。</li>
-            <li>翻译方式：<strong>翻译选中文本</strong>（默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Q</kbd>）、<strong>翻译当前段落</strong>（<kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd>）、<strong>整章翻译</strong>。</li>
-            <li>设置里可开“双语对照”：上行原文、下行译文；后台会预取下一章的翻译，读完一章后切换更快。</li>
-            <li>译文有缓存，同一段第二次翻译基本是瞬时的。</li>
+            <li>先到 <strong>工具 → 模型管理</strong> 下载“中译英 / 英译中”模型（opus-mt），下载一次即可离线使用；没下载就用翻译，程序会<strong>提示你先下载</strong>，不会静默失败。</li>
+            <li>三种用法：<strong>翻译选中文本</strong>（默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Q</kbd>）、<strong>翻译当前段落</strong>（<kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd>）、<strong>翻译选项卡里对话式翻译</strong>。</li>
+            <li><strong>双语对照</strong>（设置里开）：正文上行原文、下行译文；后台线程会预取下一章并翻译，读起来更连贯。</li>
+            <li>译文有缓存：同一段第二次翻译基本瞬时；模型完全在本地跑，<strong>正文不会上传</strong>。</li>
+            <li>机器翻译质量有限，长句/古风/专有名词容易别扭；要更准就一次翻一小段。</li>
           </ul>
         </div>
       </details>
@@ -441,22 +524,25 @@
         <summary>8. 扫描版 PDF 的本地 OCR</summary>
         <div class="body">
           <ul>
-            <li>打开没有文字层的扫描版 PDF 时，程序会逐页判断：某页文字太少或像乱码，就只对那一页做 OCR，再和文字层合并。</li>
-            <li>OCR 使用本地 Tesseract 5（随程序提供），不需要联网，也不上传文件。</li>
-            <li>第一次识别会慢一些；结果会缓存为 <code>&lt;原文件名&gt;.ocr.txt</code>，下次打开直接读缓存。</li>
-            <li>识别质量取决于扫描清晰度；倾斜、低分辨率、手写体的效果会差一些。</li>
+            <li>打开 PDF 时逐页检查：某一页文字太少或像乱码，就<strong>只对那一页</strong>做 OCR，再和文字层合并，所以“只有几页是扫描件”的 PDF 也能正常读。</li>
+            <li>识别引擎二选一（设置 → 阅读设置 → PDF 识别）：<strong>Tesseract 5</strong>（随程序提供）或 <strong>微软 OCR</strong>（Windows 10/11 自带，需要装 OCR 语言包）。换引擎后各自的缓存独立。</li>
+            <li>一般“翻到哪页先识别哪页”（约 1 秒/页），后台继续补全；页数多时第一次打开会慢。</li>
+            <li>结果缓存为 <code>&lt;原文件名&gt;.ocr.txt</code>，下次打开直接读；想重新识别就删掉这个文件。</li>
+            <li>识别质量取决于扫描清晰度：倾斜、低分辨率、手写体、竖排古文会明显变差。</li>
+            <li>可以把识别/合并后的正文用 <strong>文件 → 保存为 TXT</strong> 导出，当成普通小说再读。</li>
           </ul>
         </div>
       </details>
+
       <details class="acc">
         <summary>9. 书签、文摘、高亮、词典与过滤词</summary>
         <div class="body">
           <ul>
-            <li><strong>书签</strong>：阅读区右键“添加书签”，或按 <kbd>F8</kbd> 打开书签列表；列表支持分页、跳转、删除。</li>
-            <li><strong>文摘</strong>：选中文字后右键“添加文摘”；文摘选项卡支持增删改查、分页和导出 txt。</li>
-            <li><strong>高亮</strong>：选中文字右键“高亮”，可在“高亮笔记”里查看；支持清除本章高亮。</li>
-            <li><strong>查词典 / 生词本</strong>：选中文字右键查词典（默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>D</kbd>），生词本默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd>。</li>
-            <li><strong>过滤词</strong>：右键“过滤本段文字”可把广告/站点声明加入过滤规则；以 <code>##</code> 开头可写正则。</li>
+            <li><strong>书签</strong>：正文右键“添加书签”，或 <kbd>F8</kbd> 打开列表；列表分页、回车跳转、Delete 删除。书签按书保存，换书只显示当前书的。</li>
+            <li><strong>文摘</strong>：选中文字 → 右键“添加文摘”；“文摘”选项卡里可增删改查、分页、导出 txt。新文摘会带上书名与章节名。</li>
+            <li><strong>高亮</strong>：选中文字 → 右键“高亮”；“高亮笔记”里能看到全部高亮，可跳转；“清除本章高亮”一键恢复底色。</li>
+            <li><strong>查词典 / 生词本</strong>：选中文字右键查词典（<kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>D</kbd>）；查过的词进生词本（<kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd>）。没有选区时取光标处的一个词（中文取 1~2 字）。</li>
+            <li><strong>过滤词</strong>：右键“过滤本段文字”把广告/站点声明加入规则，以后自动剔除；规则里以 <code>##</code> 开头可写正则。改完重开本章即可看到效果。</li>
           </ul>
         </div>
       </details>
@@ -464,17 +550,24 @@
       <details class="acc">
         <summary>10. 数据、备份、恢复与迁移</summary>
         <div class="body">
-          <p>所有用户数据都在 <strong>“文档”目录下的 <code>XinYueConfig</code></strong>（如果“文档”被重定向，就在重定向后的位置）。常见文件：</p>
+          <p>所有用户数据都在 <strong>“文档” → <code>XinYueConfig</code></strong>（“文档”被重定向时就在重定向后的位置，本机是 <code>D:\pstoh\Documents\XinYueConfig</code>）。</p>
+          <div class="tablewrap"><table>
+            <thead><tr><th>文件 / 目录</th><th>内容</th></tr></thead>
+            <tbody>
+              <tr><td><code>YGBH.DB</code></td><td>SQLite 数据库：书架、书签、文摘、高亮、阅读进度、书源等</td></tr>
+              <tr><td><code>option.xml</code></td><td>设置、排版、语音参数、快捷键</td></tr>
+              <tr><td><code>BookSources.json</code> / <code>BooksSpider.xml</code></td><td>书源配置</td></tr>
+              <tr><td><code>Backup\</code></td><td>自动 / 手动备份（默认每天一份，保留最近 7 份）</td></tr>
+              <tr><td><code>trace.txt</code> / <code>log.txt</code></td><td>排错用的轨迹与错误日志</td></tr>
+              <tr><td><code>Speak\</code> / <code>XinYueVoiceSynthesis\</code> / <code>XinYueDownload\</code></td><td>语音缓存、合成结果、下载缓存</td></tr>
+            </tbody>
+          </table></div>
           <ul>
-            <li><code>YGBH.DB</code>：SQLite 数据库，书架、书签、文摘、阅读位置、书源等。</li>
-            <li><code>option.xml</code>：设置、快捷键、语音参数。</li>
-            <li><code>BookSources.json</code> / <code>BooksSpider.xml</code>：书源配置。</li>
-            <li><code>Backup\</code>：自动/手动备份；<code>log.txt</code> / <code>trace.txt</code>：日志与排错轨迹。</li>
-            <li><code>Speak\</code>、<code>XinYueDownload\</code>、<code>XinYueVoiceSynthesis\</code>：语音、下载、合成缓存。</li>
+            <li><strong>备份</strong>：工具 → 数据备份（会打包数据库与设置）；程序也每天自动备份。</li>
+            <li><strong>恢复</strong>：在数据备份窗口选一份 → 确认；按提示<strong>关闭程序再重开</strong>才会真正换回（当前数据会先自动备份一份）。</li>
+            <li><strong>换电脑</strong>：复制<strong>整个程序目录</strong> + <code>XinYueConfig</code> 目录，别只拷 exe（否则书架和设置都没了）。</li>
+            <li><strong>清理</strong>：可以安全删除 <code>XinYueDownload\</code>、<code>Speak\</code>、<code>XinYueVoiceSynthesis\</code> 里的旧文件；不要删 <code>YGBH.DB</code>（除非你就是要清空）。</li>
           </ul>
-          <p><strong>备份：</strong>文件 → 工具 → 数据备份；程序默认每天自动备份一份。</p>
-          <p><strong>恢复：</strong>选好备份后，按提示关闭程序再重新打开，才会真正换回数据；当前数据会先自动备份一份。</p>
-          <p><strong>迁移到新电脑：</strong>复制整个程序目录 + <code>XinYueConfig</code> 目录；不要只复制 exe。</p>
         </div>
       </details>
 
@@ -482,11 +575,101 @@
         <summary>11. 检查更新与手动升级</summary>
         <div class="body">
           <ul>
-            <li>程序启动时会静默检查更新；有新版本会提示。也可以手动执行 <strong>文件/帮助 → 检查更新</strong>。</li>
-            <li>更新读取 <a href="UpdateInfo.json">UpdateInfo.json</a>（版本号、更新说明、安装包 MD5），下载后由升级器覆盖程序文件。</li>
-            <li>升级不会动 <code>XinYueConfig</code>，书架和阅读进度会保留。</li>
-            <li>如果自动更新失败：下载最新的 <code>XinYue.zip</code>，解压后覆盖程序目录（保留 <code>XinYueConfig</code> 不动）即可。</li>
+            <li>启动时会静默检查更新，有新版本会提示；也可以手动“帮助/文件 → 检查更新”。</li>
+            <li>更新信息来自 <a href="UpdateInfo.json">UpdateInfo.json</a>（版本号、更新说明、安装包 MD5）；下载后由 <code>Update\Update.exe</code> 覆盖程序文件。</li>
+            <li>升级<strong>不会动</strong> <code>XinYueConfig</code>，书架与阅读进度都保留。</li>
+            <li>自动更新失败：下载本页的 <code>XinYue.zip</code>，解压后覆盖程序目录（<code>XinYueConfig</code> 不动）即可；覆盖前先退出程序。</li>
+            <li>核对完整性：<code>certutil -hashfile XinYue.zip MD5</code> 的结果应与本页显示的 MD5 一致。不一致就换镜像重下。</li>
           </ul>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary>12. 读屏与纯键盘用户（重点）</summary>
+        <div class="body">
+          <h4>阅读框的焦点</h4>
+          <ul>
+            <li>正文是一个<strong>原生编辑控件</strong>，读屏的“逐行/逐字朗读”要求<strong>它自己有光标焦点</strong>。</li>
+            <li>从书库 / 书架 / 最近阅读 / 章节列表打开书或章节后，程序会把焦点送进正文；如果听到的是按钮或列表，按 <kbd>Esc</kbd> 或 <kbd>Tab</kbd> 回到正文，或在正文上点一下。</li>
+            <li>焦点在正文里时按 <kbd>Tab</kbd>：先到“下一章”按钮；没有下一章时到选项卡表头（再用 <kbd>←</kbd>/<kbd>→</kbd> 换页）。</li>
+          </ul>
+          <h4>争渡（ZDSR）常用操作</h4>
+          <ul>
+            <li><strong>关闭数字键（NumLock 关）</strong>，按<strong>小键盘 7</strong> = 逐行朗读：从光标所在行开始，一行一行往下读。</li>
+            <li><kbd>←</kbd>/<kbd>→</kbd> = 逐字朗读；按住 <kbd>Shift</kbd> 再按 <kbd>→</kbd> = 选中并朗读选中的内容。</li>
+            <li>读到<strong>本章最后一行</strong>会自动进下一章（前提：设置里“自动翻页”开着；这条在 V2.0.6.23 之前有两个 bug，已修）。</li>
+            <li>程序自己的“朗读”和读屏的“逐行朗读”是两套东西：要读屏念，就别开程序的语音朗读；两者同时开会互相抢光标。</li>
+          </ul>
+          <h4>其它无障碍约定</h4>
+          <ul>
+            <li>所有按钮都保留<strong>文字标签与访问键</strong>（如“下一章(_N)”），不用纯图标代替文字。</li>
+            <li>章节数字框：<kbd>↑</kbd>/<kbd>↓</kbd> 改值、<kbd>Enter</kbd> 跳转；改值时读屏只念一次新值。</li>
+            <li>加载章节数据时，“上一章/下一章/跳转”会禁用，避免你在加载中连按。</li>
+            <li>翻页动画检测到读屏会自动跳过，不会用遮罩挡住正文。</li>
+          </ul>
+          <h4>“读屏读不出正文”自查顺序</h4>
+          <ol>
+            <li>先看<strong>别的程序</strong>（记事本）里读屏能不能读：不能 → 读屏/系统/杀毒问题，不是本程序；</li>
+            <li>检查程序目录里有没有多余的 <code>UIAutomation*.dll</code>（会弹“未能从程序集 UIAutomationTypes…”）：新版启动会自动改名避开，重启一次即可；</li>
+            <li>确认正文有焦点（见上）；章节很短也可能“读到空行”是正常现象（空行就是没字）；</li>
+            <li>仍不行：把 <code>文档\XinYueConfig\trace.txt</code> 最后 30 行发给作者（里面有 `章尾光标判定`、`阅读排版 应用` 等关键行）。</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary>13. 设置项速查</summary>
+        <div class="body">
+          <div class="tablewrap"><table>
+            <thead><tr><th>位置</th><th>设置项</th><th>说明 / 默认</th></tr></thead>
+            <tbody>
+              <tr><td rowspan="3">常规</td><td>翻页动画</td><td>默认开；读屏在跑时自动跳过</td></tr>
+              <tr><td>自动翻页</td><td>默认开：光标到章尾自动进下一章</td></tr>
+              <tr><td>自动换行 / 页边距</td><td>见“阅读设置”</td></tr>
+              <tr><td rowspan="6">语音</td><td>语音引擎</td><td>SAPI5 / 自然语音 / 本地模型（Kokoro、ZipVoice、克隆）</td></tr>
+              <tr><td>语音角色</td><td>选什么用什么；旁边“试听”先确认</td></tr>
+              <tr><td>语速 / 音量 / 音高</td><td>0~100 滑块</td></tr>
+              <tr><td>输出设备</td><td>指定声卡（不跟随系统默认）</td></tr>
+              <tr><td>参考音频 / 参考文本</td><td>仅本地克隆引擎显示</td></tr>
+              <tr><td>自然语音适配器</td><td>一键安装 / 卸载</td></tr>
+              <tr><td rowspan="6">阅读</td><td>字体 / 字号 / 加粗</td><td>改完立刻生效</td></tr>
+              <tr><td>行距 / 段间距</td><td>1~2 倍 / 0~24 磅</td></tr>
+              <tr><td>首行缩进</td><td>0~4 字（要先开自动换行）</td></tr>
+              <tr><td>页边距</td><td>0~80 像素</td></tr>
+              <tr><td>自动滚动</td><td>2~60 秒一行；可“到章末尾就停”</td></tr>
+              <tr><td>PDF 识别</td><td>Tesseract / 微软 OCR</td></tr>
+              <tr><td rowspan="3">快捷键</td><td>全局 / 仅程序内</td><td>逐项可改；默认 <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+字母</td></tr>
+              <tr><td>朗读 / 暂停</td><td>S / P</td></tr>
+              <tr><td>上一章 / 下一章</td><td>PageUp / PageDown</td></tr>
+              <tr><td>模型管理</td><td>翻译模型 / 语音模型</td><td>下载前会检查磁盘与硬件，吃力时提示</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary>14. 出问题了怎么查</summary>
+        <div class="body">
+          <h4>两个日志</h4>
+          <ul>
+            <li><code>文档\XinYueConfig\log.txt</code>：错误与异常（带时间、堆栈）。</li>
+            <li><code>文档\XinYueConfig\trace.txt</code>：运行轨迹（启动、打开书、换章、排版、朗读、搜索、章节判定…）。<strong>报问题发最后 30~50 行最有价值</strong>。</li>
+          </ul>
+          <h4>常见现象 → 先查什么</h4>
+          <div class="tablewrap"><table>
+            <thead><tr><th>现象</th><th>先检查</th></tr></thead>
+            <tbody>
+              <tr><td>双击没反应/一闪而过</td><td>托盘里是否已有“新阅”；是否装了 .NET 4.7.2；看 trace 最后几行</td></tr>
+              <tr><td>启动弹“未能从程序集 UIAutomationTypes…”</td><td>程序目录多余的 <code>UIAutomation*.dll</code>；新版会自动改名，重启即可</td></tr>
+              <tr><td>读屏读到章尾不翻章</td><td>“自动翻页”是否开；是否点过“暂停朗读”（新版已修）；升级到 V2.0.6.23+</td></tr>
+              <tr><td>朗读没声音</td><td>语音设置里“试听”→ 换发音人/引擎/输出设备；自然语音要联网或本地包</td></tr>
+              <tr><td>翻译提示没模型</td><td>工具 → 模型管理 → 下载中英/英中模型</td></tr>
+              <tr><td>网络小说解析不出章节</td><td>网址是不是“目录页”；换书源；稍后重试</td></tr>
+              <tr><td>扫描版 PDF 很慢</td><td>首次逐页 OCR 正常；之后走 .ocr.txt 缓存</td></tr>
+              <tr><td>界面卡顿</td><td>关掉翻页动画；超长章节（几万字一章）首次加载会慢；把 trace 发给作者</td></tr>
+            </tbody>
+          </table></div>
+          <p class="mini">发问题请附：版本号（帮助 → 关于）、现象、复现步骤、<code>trace.txt</code> 末尾几十行。数据文件里可能有你的书，发之前可以只挑日志行。</p>
         </div>
       </details>
     </section>
@@ -533,6 +716,8 @@
         <details><summary>网络小说解析不出章节</summary><div class="a">确认填的是“目录页”而不是某一章；有些站点需要验证码或对爬虫有限制，可以在书库里换一个书源，或稍后重试。解析成功后程序会自动加入书架。</div></details>
         <details><summary>扫描版 PDF 识别很慢 / 识别不出来</summary><div class="a">第一次打开要逐页 OCR，页数多时会慢；现在翻到哪一页就即时识别哪一页（约 1 秒），后台也会继续逐页补全，不用重新打开。之后会读 <code>&lt;文件名&gt;.ocr.txt</code> 缓存。扫描太模糊、倾斜严重或手写体时，识别率会下降。</div></details>
         <details><summary>读屏在阅读区里不能逐行朗读</summary><div class="a">阅读区是原生编辑控件，需要它自己有光标焦点。点一下正文，或按 Tab 把焦点移回阅读框；数字键关闭时按小键盘 7 开始逐行朗读。若焦点被侧栏抢走，按 F7 收起章节列表。</div></details>
+        <details><summary>读屏读到本章最后一行不跳到下一章</summary><div class="a">先确认 设置 → 阅读设置 里“自动翻页”是开着的。V2.0.6.23 修了两个原因：① 按过“暂停朗读”（不是“停止”）之后，程序曾误以为还在朗读，于是把自动翻章整个关掉；② 阅读框里光标的位置和正文位置差一个数（每个换行差 1 个字），长章节时光标永远“到不了末尾”。请升级到 V2.0.6.23 或更新版本；旧版可以先按“停止朗读”再试。</div></details>
+        <details><summary>一打开就弹“未能从程序集 UIAutomationTypes… 中加载类型 IRawElementProviderSimple”</summary><div class="a">程序目录里混进了不该随程序分发的 <code>UIAutomation*.dll</code>（这类程序集必须用系统自带的那份）。V2.0.6.23 起启动时会自动把这类文件改名避开（trace.txt 里会有“程序目录里发现多余的 …已改名避开”），重启一次即可；也可以手动删除程序目录里的 <code>UIAutomationClient.dll / UIAutomationProvider.dll / UIAutomationTypes.dll</code>。</div></details>
         <details><summary>数据在哪？换电脑怎么迁移？</summary><div class="a">在 <code>文档\XinYueConfig\</code>。迁移时复制整个程序目录和这个配置目录；不要只复制 exe，否则书架和设置会丢。</div></details>
         <details><summary>GitHub 下载很慢 / 打不开</summary><div class="a">用页面上的 GitHub Raw / 仓库直链 / ghfast 镜像；它们指向同一个文件，MD5 应一致。</div></details>
       </div>
