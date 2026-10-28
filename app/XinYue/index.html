@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.24</span>（<span id="sizeText">约 40 MB</span>）</span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.25</span>（<span id="sizeText">约 40 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.24</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.25</strong></li>
           <li><span>安装包大小</span><strong id="sizeFact">42,362,059 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">551DC32371EEFC06EA85A4C6D17B336C</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">0BFF409715F3CC7411A0BCBF1BBE8DFE</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.24</span></span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.25</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">551DC32371EEFC06EA85A4C6D17B336C</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">0BFF409715F3CC7411A0BCBF1BBE8DFE</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -298,7 +298,7 @@
         </div>
       </div>
       <p class="mini" id="copyStatus" role="status" aria-live="polite"></p>
-      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>551DC32371EEFC06EA85A4C6D17B336C</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
+      <div class="callout"><span class="ico" aria-hidden="true">✓</span><p><strong>校验方法：</strong>下载后在文件所在目录打开命令提示符，执行 <code>certutil -hashfile XinYue.zip MD5</code>，结果应为 <code>0BFF409715F3CC7411A0BCBF1BBE8DFE</code>。如果 MD5 不一致，说明下载不完整，请换镜像重下。</p></div>
     </section>
     <section id="guide" aria-labelledby="guide-title">
       <div class="section-head">
@@ -597,7 +597,7 @@
           <ul>
             <li><strong>关闭数字键（NumLock 关）</strong>，按<strong>小键盘 7</strong> = 逐行朗读：从光标所在行开始，一行一行往下读。</li>
             <li><kbd>←</kbd>/<kbd>→</kbd> = 逐字朗读；按住 <kbd>Shift</kbd> 再按 <kbd>→</kbd> = 选中并朗读选中的内容。</li>
-            <li>读到<strong>本章最后一行</strong>会自动进下一章（前提：设置里“自动翻页”开着；这条在 V2.0.6.24 之前有两个 bug，已修）。</li>
+            <li>读到<strong>本章最后一行</strong>会自动进下一章（前提：设置里“自动翻页”开着；这条在 V2.0.6.25 之前有两个 bug，已修）。</li>
             <li>程序自己的“朗读”和读屏的“逐行朗读”是两套东西：要读屏念，就别开程序的语音朗读；两者同时开会互相抢光标。</li>
           </ul>
           <h4>其它无障碍约定</h4>
@@ -661,7 +661,7 @@
             <tbody>
               <tr><td>双击没反应/一闪而过</td><td>托盘里是否已有“新阅”；是否装了 .NET 4.7.2；看 trace 最后几行</td></tr>
               <tr><td>启动弹“未能从程序集 UIAutomationTypes…”</td><td>程序目录多余的 <code>UIAutomation*.dll</code>；新版会自动改名，重启即可</td></tr>
-              <tr><td>读屏读到章尾不翻章</td><td>“自动翻页”是否开；是否点过“暂停朗读”（新版已修）；升级到 V2.0.6.24+</td></tr>
+              <tr><td>读屏读到章尾不翻章</td><td>“自动翻页”是否开；是否点过“暂停朗读”（新版已修）；升级到 V2.0.6.25+</td></tr>
               <tr><td>朗读没声音</td><td>语音设置里“试听”→ 换发音人/引擎/输出设备；自然语音要联网或本地包</td></tr>
               <tr><td>翻译提示没模型</td><td>工具 → 模型管理 → 下载中英/英中模型</td></tr>
               <tr><td>网络小说解析不出章节</td><td>网址是不是“目录页”；换书源；稍后重试</td></tr>
@@ -716,8 +716,8 @@
         <details><summary>网络小说解析不出章节</summary><div class="a">确认填的是“目录页”而不是某一章；有些站点需要验证码或对爬虫有限制，可以在书库里换一个书源，或稍后重试。解析成功后程序会自动加入书架。</div></details>
         <details><summary>扫描版 PDF 识别很慢 / 识别不出来</summary><div class="a">第一次打开要逐页 OCR，页数多时会慢；现在翻到哪一页就即时识别哪一页（约 1 秒），后台也会继续逐页补全，不用重新打开。之后会读 <code>&lt;文件名&gt;.ocr.txt</code> 缓存。扫描太模糊、倾斜严重或手写体时，识别率会下降。</div></details>
         <details><summary>读屏在阅读区里不能逐行朗读</summary><div class="a">阅读区是原生编辑控件，需要它自己有光标焦点。点一下正文，或按 Tab 把焦点移回阅读框；数字键关闭时按小键盘 7 开始逐行朗读。若焦点被侧栏抢走，按 F7 收起章节列表。</div></details>
-        <details><summary>读屏读到本章最后一行不跳到下一章</summary><div class="a">先确认 设置 → 阅读设置 里“自动翻页”是开着的。V2.0.6.24 修了两个原因：① 按过“暂停朗读”（不是“停止”）之后，程序曾误以为还在朗读，于是把自动翻章整个关掉；② 阅读框里光标的位置和正文位置差一个数（每个换行差 1 个字），长章节时光标永远“到不了末尾”。请升级到 V2.0.6.24 或更新版本；旧版可以先按“停止朗读”再试。</div></details>
-        <details><summary>一打开就弹“未能从程序集 UIAutomationTypes… 中加载类型 IRawElementProviderSimple”</summary><div class="a">程序目录里混进了不该随程序分发的 <code>UIAutomation*.dll</code>（这类程序集必须用系统自带的那份）。V2.0.6.24 起启动时会自动把这类文件改名避开（trace.txt 里会有“程序目录里发现多余的 …已改名避开”），重启一次即可；也可以手动删除程序目录里的 <code>UIAutomationClient.dll / UIAutomationProvider.dll / UIAutomationTypes.dll</code>。</div></details>
+        <details><summary>读屏读到本章最后一行不跳到下一章</summary><div class="a">先确认 设置 → 阅读设置 里“自动翻页”是开着的。V2.0.6.25 修了两个原因：① 按过“暂停朗读”（不是“停止”）之后，程序曾误以为还在朗读，于是把自动翻章整个关掉；② 阅读框里光标的位置和正文位置差一个数（每个换行差 1 个字），长章节时光标永远“到不了末尾”。请升级到 V2.0.6.25 或更新版本；旧版可以先按“停止朗读”再试。</div></details>
+        <details><summary>一打开就弹“未能从程序集 UIAutomationTypes… 中加载类型 IRawElementProviderSimple”</summary><div class="a">程序目录里混进了不该随程序分发的 <code>UIAutomation*.dll</code>（这类程序集必须用系统自带的那份）。V2.0.6.25 起启动时会自动把这类文件改名避开（trace.txt 里会有“程序目录里发现多余的 …已改名避开”），重启一次即可；也可以手动删除程序目录里的 <code>UIAutomationClient.dll / UIAutomationProvider.dll / UIAutomationTypes.dll</code>。</div></details>
         <details><summary>数据在哪？换电脑怎么迁移？</summary><div class="a">在 <code>文档\XinYueConfig\</code>。迁移时复制整个程序目录和这个配置目录；不要只复制 exe，否则书架和设置会丢。</div></details>
         <details><summary>GitHub 下载很慢 / 打不开</summary><div class="a">用页面上的 GitHub Raw / 仓库直链 / ghfast 镜像；它们指向同一个文件，MD5 应一致。</div></details>
       </div>
@@ -726,23 +726,17 @@
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
       <div class="notes" id="releaseNotes">
-新阅 V2.0.6.24
+新阅 V2.0.6.25
 
-本版重点：继续处理"一打开就弹 UIAutomation 报错"（2.0.6.24 只解决了"程序目录混进 DLL"这一种）
+本版重点：修 "F7 打开章节列表后，按 Esc 收不起来"
 
-1.【新增】启动时做一次"无障碍自检"：检查系统能不能加载
-  System.Windows.Automation.Provider.IRawElementProviderSimple，
-  并把实际加载到的程序集与路径写进 trace.txt（GAC 还是程序目录，一眼能看出来）。
-  以后遇到同类反馈，让对方把 trace.txt 里「无障碍自检」那一行发来即可定位。
+1.【修复】Esc 关不掉左侧的章节列表 / 书签列表。
+  原因：阅读框是原生编辑控件，它把 Esc 当"对话框键"吃掉了（和 Tab 一样），
+  程序里"Esc 收侧栏"的代码根本收不到这个键。
+  现在 Esc 会先把打开着的侧栏收起来，并把焦点送回正文；
+  在别的选项卡按 Esc 仍然是"回到阅读页"。
 
-2.【改进】"无障碍提供程序加载失败"不再每次弹带堆栈的原始错误框。
-  这个异常在读屏每次访问界面时都会再抛一次，以前会被弹框彻底挡住；
-  现在只在第一次弹一次**带处理步骤**的中文提示（删多余 DLL / 修复 .NET / Win7 装 KB971513），
-  之后静默，并把详细信息写进 log.txt 与 trace.txt。
-
-3.【保留】2.0.6.24 的启动自愈：程序目录里多余的 UIAutomation*.dll 会在启动时自动改名避开。
-
-4. 本版包含 2.0.6.24 及更早版本的全部修复。
+2. 本版包含 2.0.6.25 及更早版本的全部修复（无障碍自检、读到章尾自动翻章、启动 UIAutomation 报错等）。
     </div>
     </section>
   </div>
@@ -762,7 +756,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.24", md5: "551DC32371EEFC06EA85A4C6D17B336C" };
+  var fallback = { version: "2.0.6.25", md5: "0BFF409715F3CC7411A0BCBF1BBE8DFE" };
 
   function text(id, value) {
     var el = document.getElementById(id);
