@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.29</span>（<span id="sizeText">约 40 MB</span>）</span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.30</span>（<span id="sizeText">约 40 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.29</strong></li>
-          <li><span>安装包大小</span><strong id="sizeFact">42,378,455 字节</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.30</strong></li>
+          <li><span>安装包大小</span><strong id="sizeFact">43,389,782 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">FC7FDA6E4F61DD67D065B16423FEC44E</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">6885C0199C4535D6A2B4C113F1924E9A</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.29</span></span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.30</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">FC7FDA6E4F61DD67D065B16423FEC44E</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">6885C0199C4535D6A2B4C113F1924E9A</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -727,30 +727,35 @@
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
       <div class="notes" id="releaseNotes">
-新阅 V2.0.6.29
+新阅 V2.0.6.30
 
-本版重点：扫描版 PDF 新增 PP-OCRv6（标准版 + 轻量版），和 PP-OCRv5 三选一
+本版重点：书源 JS 引擎升级到 Jint 4（支持 ES6+），并补齐一批开源阅读的脚本接口
 
-1.【新增】PDF 识别引擎新增「PP-OCRv6 本地模型」：
-   · 用的是 PP-OCRv6 small（检测 9.9MB + 识别 21.2MB + 字典 74KB，约 30MB），
-     和 PP-OCRv5 一样完全离线，但小字号、低对比度的中文更稳；
-   · 位置：设置 → 常规设置 → PDF 识别，选「PP-OCRv6 本地模型」；
-   · 识别缓存独立：.ocr.ppocr6.txt（v5 仍是 .ocr.ppocr.txt，切引擎互不影响）。
+1.【升级】书源脚本引擎 Jint 2.11（只支持 ES5）→ Jint 4.17（ES2015+）：
+   · 模板字符串 `${x}`、箭头函数、解构、展开、可选链、startsWith/includes 等都能跑；
+   · 老书源（1629 精品书源那种 ES5 写法）行为不变。
 
-2.【新增】再加一个「PP-OCRv6 轻量版」（tiny，约 6MB）：
-   · 低配机器、或只想要速度时用它：实测同一页 0.3 秒（v5/v6 约 0.9 秒，快约 3 倍），
-     准确率只低 0.5~1.5 个百分点；
-   · 缓存：.ocr.ppocr6tiny.txt。
+2.【新增】执行书源的 jsLib（开源阅读的"JS 库"）：
+   · 大灰狼/晴天这类聚合书源把 host[]、getArguments、getVariable 全写在 jsLib 里，
+     不执行它规则根本跑不起来；现在会先执行并缓存解析结果。
 
-3.【下载】几种 OCR 模型都走「工具 → 模型管理 → PDF OCR 模型」：
-   · 列表里现在有 PP-OCRv5 / PP-OCRv6 / PP-OCRv6 轻量 三行，按【安装/下载】下对应那份，
-     可随时【删除】释放空间（各自独立目录，删一个不影响别的）；
-   · 下载源 ModelScope（RapidAI/RapidOCR，Apache-2.0），失败自动换官网镜像。
+3.【新增】补齐开源阅读的脚本接口：
+   · java：ajax（支持 url,{json} 选项）、put/get、base64/hex/md5、toast、设备号、
+     startBrowserAwait（走内置 Chromium）、getCookie 等；
+   · source：变量、登录信息；book：书籍变量/类型；cookie：内存 Cookie 罐；cache：脚本缓存。
 
-4.【回退】选了 v6 但没下载时，会先回退到装过的 PP-OCRv6 / PP-OCRv5，再回退 Tesseract / 微软本地 OCR，
-   不会出现“扫描版 PDF 打不开”；设置页会写明缺什么、去哪下载。
+4.【新增】自定义地址 data:;base64,... 与 url,{json} 选项：聚合书源用它传"书 id / 章节 id / 来源"。
 
-5. 本版包含 2.0.6.28 及更早版本的全部修复（模型改按需下载、书源发现页模板规则、F7/Esc 等）。
+5.【新增】JSON 列表的字段规则支持 JS，result 现在是**对象**（Legado 语义）：result.book_id 能取到值；
+   data:;base64,... 自定义书地址不再被拼上域名。
+
+6.【说明】聚合书源（大灰狼/晴天）能算出搜索地址、能生成带参书地址，但**搜索结果整条链路还没打通**：
+   搜索失败时存在一个**老版本就有**的 StackOverflow（与百度兜底无关），需要 crash dump 定位，本版先不动。
+
+7.【调整】书库的"默认站点"下拉框只保留百度和搜狗（悠读文学网 / 天下书库不再出现在列表里；
+   解析器保留，老书架里用它们抓的书照常能读）。
+
+8. 本版包含 2.0.6.29 及更早版本的全部修复。
     </div>
     </section>
   </div>
@@ -770,7 +775,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.29", md5: "FC7FDA6E4F61DD67D065B16423FEC44E" };
+  var fallback = { version: "2.0.6.30", md5: "6885C0199C4535D6A2B4C113F1924E9A" };
 
   function text(id, value) {
     var el = document.getElementById(id);
