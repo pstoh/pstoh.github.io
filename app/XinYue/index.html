@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.31</span>（<span id="sizeText">约 40 MB</span>）</span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.32</span>（<span id="sizeText">约 40 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.31</strong></li>
-          <li><span>安装包大小</span><strong id="sizeFact">43,391,440 字节</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.32</strong></li>
+          <li><span>安装包大小</span><strong id="sizeFact">43,393,913 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">E5FC1079C6B38AD5C259B4919313BEB3</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">31389D3A9FC87072245DF3E00E321D9F</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.31</span></span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.32</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">E5FC1079C6B38AD5C259B4919313BEB3</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">31389D3A9FC87072245DF3E00E321D9F</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -727,34 +727,24 @@
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
       <div class="notes" id="releaseNotes">
-新阅 V2.0.6.31
+新阅 V2.0.6.32
 
-本版重点：开源阅读书源（含大灰狼/晴天这类聚合源）的解析链路打通
+本版重点：新增"书源登录"，聚合书源登录后不再受免登录次数限制
 
-1.【修复】URL 里的中文、`"{}[]` 等非法字符自动转 %XX：
-   · 以前 `?tab=小说` 这样带中文的搜索地址，服务器直接回 400、内容为空（表现为"搜不到书"）；
-   · 现在搜索、目录、正文、以及脚本里的 java.ajax 都会先转义。
+1.【新增】书源登录窗口：
+   · 入口：工具 → 管理书源 → 选中书源 → 登录(_L)；
+   · 按书源要求填登录信息（JSON，例如 {"邮箱":"...","密码":"..."}），点【登录】即可；
+   · 登录成功后 Cookie 会一直保留在本次运行里，搜索/目录/正文都会自动带上；
+   · 【清除登录】可以清掉登录信息和 Cookie；重启程序需要重新登录。
 
-2.【修复】JSON 列表规则的几处老问题：
-   · `$.book_name##（别名：.*?）` 这类带 `##正则` 的规则以前取不到值（每本书被跳过），现在先剥后替换；
-   · 某条规则路径写坏不会再让整批书变 0，逐条容错；
-   · 字段规则支持 JS、`{{$.x}}` 模板、`||` 分支，统一走同一套取值。
+2.【修复】导入书源时保存原始 JSON（rawJson）：
+   · 开源阅读的 jsLib / loginUrl / loginUi 这些字段不落库，以前重启后就丢了——
+     聚合书源的 jsLib 一丢，搜索又变 0 本；现在从 rawJson 反查，重启也能用。
 
-3.【新增】书详情 / 目录 / 正文的 JS 规则：
-   · 书详情（tocUrl 等）脚本里 `result.book_id` 现在能取到（按对象传）；
-   · 目录规则整条是 JS 时走脚本，不再丢给 CSS 解析器报"意外的字符 '<'"；
-   · 正文 `<js>…</js>$.content` 的后缀会按 JSONPath 再取一次。
+3.【说明】大灰狼聚合源实测：错误账号登录会返回「用户未注册，请检查账号是否正确！」，
+   说明登录链路（脚本 → 接口 → 提示）是通的；用真实账号登录后即可正常阅读。
 
-4.【修复】`java.hexDecodeToString` 解不开时原样返回（以前返回空串，导致 `JSON.parse("")` 崩）；
-   脚本里的 POST body 是对象时按 `application/json` 发送。
-
-5.【诊断】请求拿不到内容时，trace 里会写一行"书源 X：请求没有拿到内容 —— URL｜HTTP 状态｜原因"，
-   以后书源不能用时，把 trace 里这行发过来就能定位。
-
-6.【说明】大灰狼聚合源实测：搜索 102 本、书详情、目录、正文都通了；
-   但它的后端对**未登录**用户每天只放 3 次，正文会提示"您今日免登录访问次数已达上限"，需要登录该书源（登录界面还没做）。
-
-7. 本版包含 2.0.6.30 及更早版本的全部修复。
+4. 本版包含 2.0.6.31 及更早版本的全部修复（书源解析链路、Jint 4、聚合源支持等）。
     </div>
     </section>
   </div>
@@ -774,7 +764,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.31", md5: "E5FC1079C6B38AD5C259B4919313BEB3" };
+  var fallback = { version: "2.0.6.32", md5: "31389D3A9FC87072245DF3E00E321D9F" };
 
   function text(id, value) {
     var el = document.getElementById(id);
