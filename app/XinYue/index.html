@@ -208,17 +208,17 @@
         <h1 id="hero-title">新阅阅读器<span class="en">XINYUE READER</span></h1>
         <p class="lede">把本地小说、网络书源、书架书签文摘、语音朗读、离线翻译和扫描版 PDF OCR 放进同一个 Windows 桌面程序。数据保存在你自己的“文档”目录，升级不丢书架和阅读进度。</p>
         <div class="actions">
-          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.32</span>（<span id="sizeText">约 40 MB</span>）</span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载 V<span id="versionText">2.0.6.33</span>（<span id="sizeText">约 40 MB</span>）</span></a>
           <a class="btn ghost" href="#download">镜像下载</a>
           <a class="btn ghost" href="#guide">详细使用说明</a>
         </div>
         <ul class="facts">
-          <li><span>当前版本</span><strong id="versionFact">2.0.6.32</strong></li>
-          <li><span>安装包大小</span><strong id="sizeFact">43,393,913 字节</strong></li>
+          <li><span>当前版本</span><strong id="versionFact">2.0.6.33</strong></li>
+          <li><span>安装包大小</span><strong id="sizeFact">43,394,732 字节</strong></li>
           <li><span>系统要求</span><strong>Windows 7/8/10/11 64 位</strong></li>
           <li><span>运行库</span><strong>.NET Framework 4.7.2</strong></li>
         </ul>
-        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">31389D3A9FC87072245DF3E00E321D9F</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
+        <p class="mini">下载后建议核对 MD5：<code id="md5Mini">53ADC0AE36B45A4D4951596DBFE2747D</code>。升级只替换程序文件，<code>文档\XinYueConfig</code> 里的数据不会被动。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="mock">
@@ -268,9 +268,9 @@
         <div class="dl-card primary">
           <h3>主下载 <span class="tag hot">推荐</span></h3>
           <p class="dl-note">GitHub Pages 直链，和本页同源，速度通常最稳。文件：<strong>XinYue.zip</strong></p>
-          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.32</span></span></a>
+          <a class="btn primary" href="XinYue.zip" download><span>下载新阅阅读器 V<span class="ver">2.0.6.33</span></span></a>
           <div class="urlbox"><code id="urlPrimary">https://pstoh.github.io/app/XinYue/XinYue.zip</code><button class="copy" type="button" data-copy="https://pstoh.github.io/app/XinYue/XinYue.zip">复制</button></div>
-          <p class="dl-note">MD5：<span class="md5" id="md5Full">31389D3A9FC87072245DF3E00E321D9F</span></p>
+          <p class="dl-note">MD5：<span class="md5" id="md5Full">53ADC0AE36B45A4D4951596DBFE2747D</span></p>
         </div>
         <div class="dl-card">
           <h3>GitHub Raw <span class="tag">镜像</span></h3>
@@ -727,24 +727,20 @@
     <section id="changelog" aria-labelledby="changelog-title">
       <div class="section-head"><div><h2 id="changelog-title">更新日志</h2><p>下面内容来自 <a href="UpdateInfo.json">UpdateInfo.json</a>；发布新版本后页面会自动读取最新版本号和说明。</p></div></div>
       <div class="notes" id="releaseNotes">
-新阅 V2.0.6.32
+新阅 V2.0.6.33
 
-本版重点：新增"书源登录"，聚合书源登录后不再受免登录次数限制
+本版重点：正文分页更稳（随机间隔 + 失败重试一次）
 
-1.【新增】书源登录窗口：
-   · 入口：工具 → 管理书源 → 选中书源 → 登录(_L)；
-   · 按书源要求填登录信息（JSON，例如 {"邮箱":"...","密码":"..."}），点【登录】即可；
-   · 登录成功后 Cookie 会一直保留在本次运行里，搜索/目录/正文都会自动带上；
-   · 【清除登录】可以清掉登录信息和 Cookie；重启程序需要重新登录。
+1.【优化】书源正文分页（ruleContent.nextContentUrl，一章被拆成 _2/_3 页的那种）：
+   · 每翻一页前随机停 300~1600ms，避免固定频率被站点当爬虫；
+   · 请求失败/取不到正文时，再等一次随机间隔**重试一次**；
+   · 重试仍失败就停在已抓到的页，已读正文不会丢。
 
-2.【修复】导入书源时保存原始 JSON（rawJson）：
-   · 开源阅读的 jsLib / loginUrl / loginUi 这些字段不落库，以前重启后就丢了——
-     聚合书源的 jsLib 一丢，搜索又变 0 本；现在从 rawJson 反查，重启也能用。
+2.【优化】百度/搜狗正文分页（同一章被拆成 X.html → X_1.html → X_2.html）：
+   · 同样加上 300~1600ms 随机间隔与失败重试一次；
+   · 其它护栏不变：最多 10 页、只认同章 "地址_数字" 的链接、子页标题必须同章、重复正文去重。
 
-3.【说明】大灰狼聚合源实测：错误账号登录会返回「用户未注册，请检查账号是否正确！」，
-   说明登录链路（脚本 → 接口 → 提示）是通的；用真实账号登录后即可正常阅读。
-
-4. 本版包含 2.0.6.31 及更早版本的全部修复（书源解析链路、Jint 4、聚合源支持等）。
+3. 本版包含 2.0.6.32 及更早版本的全部修复（书源登录、聚合源解析链路等）。
     </div>
     </section>
   </div>
@@ -764,7 +760,7 @@
 
 <script>
 (function () {
-  var fallback = { version: "2.0.6.32", md5: "31389D3A9FC87072245DF3E00E321D9F" };
+  var fallback = { version: "2.0.6.33", md5: "53ADC0AE36B45A4D4951596DBFE2747D" };
 
   function text(id, value) {
     var el = document.getElementById(id);
